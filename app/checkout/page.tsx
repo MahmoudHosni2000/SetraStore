@@ -1,0 +1,315 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
+import Navbar from '@/components/Navbar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingBag, Tag } from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function CheckoutPage() {
+  const { cart, cartTotal, clearCart } = useCart();
+  const { user, profile } = useAuth();
+  const router = useRouter();
+
+  const [name, setName] = useState(profile?.full_name || '');
+  const [phone, setPhone] = useState(profile?.phone || '');
+  const [address, setAddress] = useState(profile?.address || '');
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  if (!user || cart.length === 0) {
+    router.push('/cart');
+    return null;
+  }
+
+  const discountAmount = appliedCoupon
+    ? (cartTotal * appliedCoupon.discount_percentage) / 100
+    : 0;
+  const finalAmount = cartTotal - discountAmount;
+
+  async function handleApplyCoupon() {
+    if (!couponCode) return;
+
+    setApplyingCoupon(true);
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        toast.error('Invalid or expired coupon code');
+        return;
+      }
+
+      if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        toast.error('This coupon has expired');
+        return;
+      }
+
+      setAppliedCoupon(data);
+      toast.success(`Coupon applied! ${data.discount_percentage}% off`);
+    } catch (error: any) {
+      toast.error('Error applying coupon');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  }
+
+  async function handlePlaceOrder(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!user) {
+      toast.error('Please sign in to place an order');
+      return;
+    }
+
+    if (!name || !phone || !address) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          customer_name: name,
+          customer_phone: phone,
+          customer_address: address,
+          total_amount: cartTotal,
+          discount_amount: discountAmount,
+          final_amount: finalAmount,
+          status: 'pending',
+          payment_method: 'Cash on Delivery',
+          coupon_code: appliedCoupon?.code || null,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      const orderItems = cart.map((item) => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.products.price,
+        product_name: item.products.name,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      for (const item of cart) {
+        await supabase
+          .from('products')
+          .update({ stock: item.products.stock - item.quantity })
+          .eq('id', item.product_id);
+      }
+
+      await clearCart();
+      toast.success('Order placed successfully!');
+      router.push(`/orders/${order.id}`);
+    } catch (error: any) {
+      toast.error(error.message || 'Error placing order');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+
+        <form onSubmit={handlePlaceOrder}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Delivery Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Delivery Address *</Label>
+                    <Input
+                      id="address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="Street, City, State, ZIP Code"
+                      required
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payment Method</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 p-4 border border-border rounded-lg bg-secondary/20">
+                    <ShoppingBag className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-medium">Cash on Delivery</p>
+                      <p className="text-sm text-muted-foreground">
+                        Pay when you receive your order
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Tag className="h-5 w-5" />
+                    Apply Coupon
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      disabled={!!appliedCoupon}
+                    />
+                    {appliedCoupon ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setAppliedCoupon(null);
+                          setCouponCode('');
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={applyingCoupon || !couponCode}
+                      >
+                        Apply
+                      </Button>
+                    )}
+                  </div>
+                  {appliedCoupon && (
+                    <div className="mt-2">
+                      <Badge className="bg-green-500">
+                        {appliedCoupon.discount_percentage}% OFF Applied
+                      </Badge>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div>
+              <Card className="sticky top-20">
+                <CardHeader>
+                  <CardTitle>Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    {cart.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between text-sm"
+                      >
+                        <span className="text-muted-foreground">
+                          {item.products.name} x{item.quantity}
+                        </span>
+                        <span>
+                          ${(item.products.price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2 py-4 border-y border-border">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>${cartTotal.toFixed(2)}</span>
+                    </div>
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount ({appliedCoupon.discount_percentage}%)</span>
+                        <span>-${discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Shipping</span>
+                      <span>Free</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">${finalAmount.toFixed(2)}</span>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={loading}
+                  >
+                    {loading ? 'Placing Order...' : 'Place Order'}
+                  </Button>
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    By placing your order, you agree to our terms and conditions
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
