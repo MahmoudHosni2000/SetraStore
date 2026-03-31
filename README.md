@@ -1,6 +1,6 @@
 # SetraStore - E-Commerce Cosmetics Application
 
-A modern, full-featured e-commerce application built with Next.js 13, Supabase, and TypeScript for selling cosmetics and beauty products.
+A modern, full-featured e-commerce application built with **Next.js 16.2.1**, **React 19**, Supabase, and TypeScript for selling cosmetics and beauty products.
 
 ## Features
 
@@ -14,6 +14,7 @@ A modern, full-featured e-commerce application built with Next.js 13, Supabase, 
 - **Reviews & Ratings**: Write and read product reviews with star ratings
 - **Checkout**: Simple checkout process with Cash on Delivery
 - **Discount Coupons**: Apply promotional codes for discounts
+- **Internationalization**: Full support for English and Arabic (RTL) using `next-intl`
 - **Order Tracking**: View order history and status updates
 
 ### Admin Features
@@ -31,7 +32,7 @@ A modern, full-featured e-commerce application built with Next.js 13, Supabase, 
 
 ## Tech Stack
 
-- **Frontend**: Next.js 13 (App Router), React, TypeScript
+- **Frontend**: Next.js 16.2.1 (App Router), React 19, TypeScript 5.x
 - **Styling**: Tailwind CSS, shadcn/ui components
 - **Backend**: Supabase (PostgreSQL database, Authentication, Real-time)
 - **State Management**: React Context API
@@ -55,7 +56,7 @@ All tables have Row Level Security (RLS) enabled for data protection.
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ installed
+- Node.js 20.9+ installed
 - A Supabase account and project
 
 ### Setup Instructions
@@ -97,22 +98,19 @@ All tables have Row Level Security (RLS) enabled for data protection.
 
 ```
 ├── app/                      # Next.js app directory
-│   ├── admin/               # Admin dashboard
-│   ├── cart/                # Shopping cart page
-│   ├── checkout/            # Checkout process
-│   ├── login/               # Authentication pages
-│   ├── orders/              # Order management
-│   ├── products/            # Product listing and details
-│   ├── wishlist/            # Wishlist page
-│   └── page.tsx             # Homepage
+│   ├── [locale]/            # Localized routes (en/ar)
+│   │   ├── admin/           # Admin dashboard
+│   │   ├── cart/            # Shopping cart page
+│   │   ├── checkout/        # Checkout process
+│   │   ├── login/           # Authentication pages
+│   │   ├── orders/          # Order management
+│   │   ├── products/        # Product listing and details
+│   │   ├── wishlist/        # Wishlist page
+│   │   └── page.tsx         # Homepage
 ├── components/              # Reusable components
 │   ├── ui/                  # shadcn/ui components
-│   ├── Navbar.tsx           # Navigation bar
-│   ├── ProductCard.tsx      # Product card component
-│   └── Loading.tsx          # Loading spinner
-├── context/                 # React Context providers
-│   ├── AuthContext.tsx      # Authentication state
-│   └── CartContext.tsx      # Shopping cart state
+├── proxy.ts                 # Next.js 16 Middleware (Network Proxy)
+├── i18n/                    # Internationalization configuration
 └── lib/                     # Utilities and configurations
     └── supabase.ts          # Supabase client and types
 ```
@@ -204,7 +202,6 @@ Potential features to add:
 - Advanced analytics dashboard
 - Social login options
 - Image upload for products
-- Multi-language support
 - Customer support chat
 
 ## License

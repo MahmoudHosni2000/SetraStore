@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 import { supabase, Profile } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const t = useTranslations('auth');
 
   useEffect(() => {
     checkUser();
@@ -123,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (profileError) throw profileError;
       }
     } catch (error: any) {
-      throw new Error(error.message || 'Error signing up');
+      throw new Error(error.message || t('errorSignUp'));
     }
   }
 
@@ -136,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
     } catch (error: any) {
-      throw new Error(error.message || 'Error signing in');
+      throw new Error(error.message || t('errorSignIn'));
     }
   }
 
@@ -148,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       router.push('/');
     } catch (error: any) {
-      throw new Error(error.message || 'Error signing out');
+      throw new Error(error.message || t('errorSignOut'));
     }
   }
 

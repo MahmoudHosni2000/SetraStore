@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { Product } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslations } from 'next-intl';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +29,7 @@ export default function ProductCard({
   const { user } = useAuth();
   const [isWishlisted, setIsWishlisted] = useState(isInWishlist);
   const [loading, setLoading] = useState(false);
+  const t = useTranslations('productCard');
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,7 +40,7 @@ export default function ProductCard({
     e.preventDefault();
 
     if (!user) {
-      toast.error('Please sign in to add to wishlist');
+      toast.error(t('signInRequired'));
       return;
     }
 
@@ -53,7 +55,7 @@ export default function ProductCard({
 
         if (error) throw error;
         setIsWishlisted(false);
-        toast.success('Removed from wishlist');
+        toast.success(t('removedFromWishlist'));
       } else {
         const { error } = await supabase.from('wishlist').insert({
           user_id: user.id,
@@ -62,14 +64,14 @@ export default function ProductCard({
 
         if (error) throw error;
         setIsWishlisted(true);
-        toast.success('Added to wishlist');
+        toast.success(t('addedToWishlist'));
       }
 
       if (onWishlistUpdate) {
         onWishlistUpdate();
       }
     } catch (error: any) {
-      toast.error(error.message || 'Error updating wishlist');
+      toast.error(error.message || t('wishlistError'));
     } finally {
       setLoading(false);
     }
@@ -90,12 +92,12 @@ export default function ProductCard({
               variant="destructive"
               className="absolute top-2 left-2 z-10"
             >
-              Out of Stock
+              {t('outOfStock')}
             </Badge>
           )}
           {product.is_featured && product.stock > 0 && (
             <Badge className="absolute top-2 left-2 z-10 bg-primary">
-              Featured
+              {t('featured')}
             </Badge>
           )}
           <Button
@@ -151,14 +153,14 @@ export default function ProductCard({
                   className="gap-1"
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  Add
+                  {t('add')}
                 </Button>
               )}
             </div>
 
             {product.stock > 0 && product.stock <= 10 && (
               <p className="text-xs text-orange-500">
-                Only {product.stock} left in stock
+                {t('onlyLeft', { count: product.stock })}
               </p>
             )}
           </div>
@@ -167,3 +169,4 @@ export default function ProductCard({
     </Link>
   );
 }
+

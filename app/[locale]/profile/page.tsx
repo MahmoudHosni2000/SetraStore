@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
@@ -33,6 +32,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface ProfileForm {
   full_name: string;
@@ -48,6 +48,10 @@ interface PasswordForm {
 export default function ProfilePage() {
   const { user, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
+  const t = useTranslations('profile');
+  const tc = useTranslations('common');
+  const tnav = useTranslations('nav');
+  const locale = useLocale();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -100,11 +104,11 @@ export default function ProfilePage() {
 
     // Validate
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+      toast.error(t('invalidImageToast') || 'Please select a valid image file');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be smaller than 5 MB');
+      toast.error(t('imageSizeToast') || 'Image must be smaller than 5 MB');
       return;
     }
 
@@ -141,9 +145,9 @@ export default function ProfilePage() {
 
       setAvatarPreview(publicUrl);
       await refreshProfile();
-      toast.success('Profile picture updated!');
+      toast.success(t('avatarSuccess') || 'Profile picture updated!');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to upload avatar');
+      toast.error(err.message || t('avatarError') || 'Failed to upload avatar');
       setAvatarPreview(profile?.avatar_url || null);
     } finally {
       setIsUploadingAvatar(false);
@@ -168,10 +172,10 @@ export default function ProfilePage() {
 
       if (error) throw error;
       await refreshProfile();
-      toast.success('Profile updated successfully!');
+      toast.success(t('profileSuccess') || 'Profile updated successfully!');
       setIsEditing(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to update profile');
+      toast.error(err.message || t('profileError') || 'Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -189,11 +193,11 @@ export default function ProfilePage() {
   // ---------- Password Change ----------
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error(t('passwordsDontMatch') || 'New passwords do not match');
       return;
     }
     if (passwordForm.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('passwordShort') || 'Password must be at least 6 characters');
       return;
     }
 
@@ -203,11 +207,11 @@ export default function ProfilePage() {
         password: passwordForm.newPassword,
       });
       if (error) throw error;
-      toast.success('Password changed successfully!');
+      toast.success(t('passwordSuccess') || 'Password changed successfully!');
       setPasswordForm({ newPassword: '', confirmPassword: '' });
       setIsChangingPassword(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to change password');
+      toast.error(err.message || t('passwordError') || 'Failed to change password');
     } finally {
       setIsSavingPassword(false);
     }
@@ -231,12 +235,12 @@ export default function ProfilePage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent mb-6">
             <User className="h-10 w-10 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Sign in to view your profile</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('signInPrompt')}</h2>
           <p className="text-muted-foreground mb-8">
-            Access your personal information and order history
+            {t('signInDescription')}
           </p>
           <Link href="/login">
-            <Button size="lg">Sign In</Button>
+            <Button size="lg">{tc('signIn')}</Button>
           </Link>
         </div>
       </div>
@@ -244,7 +248,7 @@ export default function ProfilePage() {
   }
 
   const memberSince = user.created_at
-    ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    ? new Date(user.created_at).toLocaleDateString(locale, { year: 'numeric', month: 'long' })
     : 'N/A';
 
   const displayInitial = (form.full_name || user.email || '?')[0].toUpperCase();
@@ -279,12 +283,12 @@ export default function ProfilePage() {
               onClick={() => avatarInputRef.current?.click()}
               disabled={isUploadingAvatar}
               className="group relative block w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-background shadow-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              title="Click to change profile picture"
+              title={t('clickToChange')}
             >
               {avatarPreview ? (
                 <Image
                   src={avatarPreview}
-                  alt="Profile picture"
+                  alt={t('profilePicture')}
                   fill
                   className="object-cover"
                   unoptimized
@@ -306,7 +310,7 @@ export default function ProfilePage() {
                 ) : (
                   <>
                     <Camera className="h-6 w-6 text-white mb-1" />
-                    <span className="text-white text-[10px] font-medium">Change Photo</span>
+                    <span className="text-white text-[10px] font-medium">{t('changePhoto')}</span>
                   </>
                 )}
               </div>
@@ -325,8 +329,8 @@ export default function ProfilePage() {
             <button
               onClick={() => avatarInputRef.current?.click()}
               disabled={isUploadingAvatar}
-              className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors border-2 border-background"
-              title="Change profile picture"
+              className={`absolute bottom-1 ${locale === 'ar' ? 'left-1' : 'right-1'} w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors border-2 border-background`}
+              title={t('changePhoto')}
             >
               {isUploadingAvatar ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -336,19 +340,19 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          <div className="text-center sm:text-left pb-2">
+          <div className={`text-center ${locale === 'ar' ? 'sm:text-right' : 'sm:text-left'} pb-2`}>
             <h1 className="text-2xl md:text-3xl font-bold">
-              {profile?.full_name || 'Welcome!'}
+              {profile?.full_name || t('welcomeHome')}
             </h1>
             <p className="text-muted-foreground text-sm">{user.email}</p>
-            <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 flex-wrap">
+            <div className={`flex items-center justify-center ${locale === 'ar' ? 'sm:justify-end' : 'sm:justify-start'} gap-2 mt-2 flex-wrap`}>
               {profile?.is_admin && (
                 <Badge className="bg-primary text-white text-xs">
-                  <Shield className="h-3 w-3 mr-1" /> Admin
+                  <Shield className={`h-3 w-3 ${locale === 'ar' ? 'ml-1' : 'mr-1'}`} /> {t('admin')}
                 </Badge>
               )}
               <Badge variant="secondary" className="text-xs">
-                <Calendar className="h-3 w-3 mr-1" /> Member since {memberSince}
+                <Calendar className={`h-3 w-3 ${locale === 'ar' ? 'ml-1' : 'mr-1'}`} /> {tc('memberSince', { date: memberSince })}
               </Badge>
             </div>
           </div>
@@ -361,14 +365,14 @@ export default function ProfilePage() {
               <Package className="h-6 w-6 text-primary" />
             </div>
             <p className="text-3xl font-bold text-primary">{orderCount}</p>
-            <p className="text-sm text-muted-foreground mt-1">Total Orders</p>
+            <p className="text-sm text-muted-foreground mt-1">{tc('totalOrders')}</p>
           </Card>
           <Card className="text-center py-6 hover:shadow-md transition-shadow">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent mb-3">
               <ShoppingBag className="h-6 w-6 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-primary">{profile?.is_admin ? 'Admin' : 'Member'}</p>
-            <p className="text-sm text-muted-foreground mt-1">Account Type</p>
+            <p className="text-3xl font-bold text-primary">{profile?.is_admin ? t('admin') : t('member')}</p>
+            <p className="text-sm text-muted-foreground mt-1">{tc('accountType')}</p>
           </Card>
         </div>
 
@@ -381,20 +385,20 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <User className="h-5 w-5 text-primary" />
-                    Personal Information
+                    {t('personalInfo')}
                   </CardTitle>
                   {!isEditing ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">
-                      <Edit3 className="h-4 w-4" /> Edit
+                      <Edit3 className="h-4 w-4" /> {t('edit')}
                     </Button>
                   ) : (
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="sm" onClick={handleCancel} className="gap-1.5 text-muted-foreground">
-                        <X className="h-4 w-4" /> Cancel
+                        <X className="h-4 w-4" /> {t('cancel')}
                       </Button>
                       <Button size="sm" onClick={handleSave} disabled={isSaving} className="gap-1.5">
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        {isSaving ? 'Saving…' : 'Save'}
+                        {isSaving ? t('saving') : t('save')}
                       </Button>
                     </div>
                   )}
@@ -405,18 +409,18 @@ export default function ProfilePage() {
                 {/* Full Name */}
                 <div className="space-y-1.5">
                   <Label htmlFor="full_name" className="flex items-center gap-2 text-sm font-medium">
-                    <User className="h-4 w-4 text-muted-foreground" /> Full Name
+                    <User className="h-4 w-4 text-muted-foreground" /> {t('fullName')}
                   </Label>
                   {isEditing ? (
                     <Input
                       id="full_name"
                       value={form.full_name}
                       onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                      placeholder="Your full name"
+                      placeholder={t('fullNamePlaceholder')}
                     />
                   ) : (
                     <p className="text-sm py-2 px-3 bg-muted/40 rounded-md">
-                      {profile?.full_name || <span className="text-muted-foreground italic">Not set</span>}
+                      {profile?.full_name || <span className="text-muted-foreground italic">{tc('notSet')}</span>}
                     </p>
                   )}
                 </div>
@@ -424,12 +428,12 @@ export default function ProfilePage() {
                 {/* Email */}
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-2 text-sm font-medium">
-                    <Mail className="h-4 w-4 text-muted-foreground" /> Email Address
+                    <Mail className="h-4 w-4 text-muted-foreground" /> {t('email')}
                   </Label>
                   <div className="flex items-center gap-2">
                     <p className="flex-1 text-sm py-2 px-3 bg-muted/40 rounded-md">{user.email}</p>
                     <Badge variant="outline" className="text-xs shrink-0 gap-1 text-green-600 border-green-200 bg-green-50">
-                      <CheckCircle className="h-3 w-3" /> Verified
+                      <CheckCircle className="h-3 w-3" /> {tc('verified')}
                     </Badge>
                   </div>
                 </div>
@@ -437,7 +441,7 @@ export default function ProfilePage() {
                 {/* Phone */}
                 <div className="space-y-1.5">
                   <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium">
-                    <Phone className="h-4 w-4 text-muted-foreground" /> Phone Number
+                    <Phone className="h-4 w-4 text-muted-foreground" /> {t('phone')}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -448,7 +452,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <p className="text-sm py-2 px-3 bg-muted/40 rounded-md">
-                      {profile?.phone || <span className="text-muted-foreground italic">Not set</span>}
+                      {profile?.phone || <span className="text-muted-foreground italic">{tc('notSet')}</span>}
                     </p>
                   )}
                 </div>
@@ -456,18 +460,18 @@ export default function ProfilePage() {
                 {/* Address */}
                 <div className="space-y-1.5">
                   <Label htmlFor="address" className="flex items-center gap-2 text-sm font-medium">
-                    <MapPin className="h-4 w-4 text-muted-foreground" /> Delivery Address
+                    <MapPin className="h-4 w-4 text-muted-foreground" /> {t('address')}
                   </Label>
                   {isEditing ? (
                     <Input
                       id="address"
                       value={form.address}
                       onChange={(e) => setForm({ ...form, address: e.target.value })}
-                      placeholder="123 Main St, City, Country"
+                      placeholder={t('addressPlaceholder')}
                     />
                   ) : (
                     <p className="text-sm py-2 px-3 bg-muted/40 rounded-md">
-                      {profile?.address || <span className="text-muted-foreground italic">Not set</span>}
+                      {profile?.address || <span className="text-muted-foreground italic">{tc('notSet')}</span>}
                     </p>
                   )}
                 </div>
@@ -479,11 +483,11 @@ export default function ProfilePage() {
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-primary" /> Password & Security
+                    <Lock className="h-5 w-5 text-primary" /> {t('passwordSecurity')}
                   </CardTitle>
                   {!isChangingPassword && (
                     <Button variant="outline" size="sm" onClick={() => setIsChangingPassword(true)} className="gap-1.5">
-                      <Edit3 className="h-4 w-4" /> Change
+                      <Edit3 className="h-4 w-4" /> {t('change')}
                     </Button>
                   )}
                 </div>
@@ -494,29 +498,29 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-md">
                     <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0" />
                     <p className="text-sm text-muted-foreground">
-                      Your password is securely stored. Click <strong>Change</strong> to update it.
+                      {t('passwordHint')}
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="new_password">New Password</Label>
+                      <Label htmlFor="new_password">{t('newPassword')}</Label>
                       <Input
                         id="new_password"
                         type="password"
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                        placeholder="Min. 6 characters"
+                        placeholder={t('passwordLengthHint')}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="confirm_password">Confirm New Password</Label>
+                      <Label htmlFor="confirm_password">{t('confirmNewPassword')}</Label>
                       <Input
                         id="confirm_password"
                         type="password"
                         value={passwordForm.confirmPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                        placeholder="Repeat new password"
+                        placeholder={t('confirmNewPasswordPlaceholder')}
                       />
                     </div>
                     <div className="flex items-center gap-2 pt-2">
@@ -529,11 +533,11 @@ export default function ProfilePage() {
                         }}
                         className="gap-1.5 text-muted-foreground"
                       >
-                        <X className="h-4 w-4" /> Cancel
+                        <X className="h-4 w-4" /> {t('cancel')}
                       </Button>
                       <Button size="sm" onClick={handlePasswordChange} disabled={isSavingPassword} className="gap-1.5">
                         {isSavingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        {isSavingPassword ? 'Saving…' : 'Update Password'}
+                        {isSavingPassword ? t('saving') : t('updatePassword')}
                       </Button>
                     </div>
                   </div>
@@ -550,9 +554,9 @@ export default function ProfilePage() {
                 <div className="flex items-start gap-3">
                   <Camera className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium mb-1">Profile Picture</p>
+                    <p className="text-sm font-medium mb-1">{t('profilePicture')}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Click your avatar at the top to upload a new photo. JPG, PNG or WebP up to 5 MB.
+                      {t('avatarHint')}
                     </p>
                   </div>
                 </div>
@@ -562,24 +566,24 @@ export default function ProfilePage() {
             {/* Quick Links */}
             <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Links</CardTitle>
+                <CardTitle className="text-base">{t('quickLinks')}</CardTitle>
               </CardHeader>
               <Separator />
               <CardContent className="pt-4 space-y-2">
                 <Link href="/orders">
-                  <Button variant="ghost" className="w-full justify-start gap-3 h-10 hover:bg-accent">
-                    <Package className="h-4 w-4 text-primary" /> My Orders
+                  <Button variant="ghost" className={`w-full justify-start gap-3 h-10 hover:bg-accent ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                    <Package className="h-4 w-4 text-primary" /> {tnav('myOrders')}
                   </Button>
                 </Link>
                 <Link href="/wishlist">
-                  <Button variant="ghost" className="w-full justify-start gap-3 h-10 hover:bg-accent">
-                    <ShoppingBag className="h-4 w-4 text-primary" /> Wishlist
+                  <Button variant="ghost" className={`w-full justify-start gap-3 h-10 hover:bg-accent ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                    <ShoppingBag className="h-4 w-4 text-primary" /> {t('wishlist')}
                   </Button>
                 </Link>
                 {profile?.is_admin && (
                   <Link href="/admin">
-                    <Button variant="ghost" className="w-full justify-start gap-3 h-10 hover:bg-accent">
-                      <Shield className="h-4 w-4 text-primary" /> Admin Dashboard
+                    <Button variant="ghost" className={`w-full justify-start gap-3 h-10 hover:bg-accent ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                      <Shield className="h-4 w-4 text-primary" /> {tnav('adminDashboard')}
                     </Button>
                   </Link>
                 )}
@@ -589,7 +593,7 @@ export default function ProfilePage() {
             {/* Sign Out */}
             <Card className="shadow-sm border-destructive/20 bg-destructive/5">
               <CardContent className="pt-4 pb-4">
-                <p className="text-xs text-muted-foreground mb-1 font-medium">Signed in as</p>
+                <p className="text-xs text-muted-foreground mb-1 font-medium">{t('signedInAs')}</p>
                 <p className="text-xs text-foreground font-medium mb-3 truncate">{user.email}</p>
                 <Button
                   variant="outline"
@@ -600,7 +604,7 @@ export default function ProfilePage() {
                     router.push('/');
                   }}
                 >
-                  Sign Out
+                  {tc('signOut')}
                 </Button>
               </CardContent>
             </Card>
@@ -610,3 +614,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

@@ -1,18 +1,22 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { supabase, Product } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import ProductCard from '@/components/ProductCard';
 import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, Star, TrendingUp } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('home');
+  const tc = useTranslations('common');
+  const locale = useLocale();
 
   useEffect(() => {
     fetchProducts();
@@ -53,29 +57,28 @@ export default function Home() {
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
                 <Sparkles className="h-4 w-4" />
-                <span className="text-sm font-medium">Premium Beauty Products</span>
+                <span className="text-sm font-medium">{t('premiumBeauty')}</span>
               </div>
 
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                Discover Your
-                <span className="block text-primary">Natural Glow</span>
+                {t('heroTitlePart1')}
+                <span className="block text-primary">{t('heroTitlePart2')}</span>
               </h1>
 
               <p className="text-lg text-muted-foreground max-w-md">
-                Shop the latest in makeup, skincare, haircare, and fragrances from top beauty brands.
-                Transform your beauty routine with premium products.
+                {t('heroDescription')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/products">
                   <Button size="lg" className="gap-2">
-                    Shop Now
-                    <ArrowRight className="h-4 w-4" />
+                    {t('shopNow')}
+                    {locale === 'ar' ? null : <ArrowRight className="h-4 w-4" />}
                   </Button>
                 </Link>
                 <Link href="/products?category=Skincare">
                   <Button size="lg" variant="outline">
-                    Explore Skincare
+                    {t('exploreSkincare')}
                   </Button>
                 </Link>
               </div>
@@ -87,12 +90,12 @@ export default function Home() {
                       <Star key={i} className="h-4 w-4 fill-current" />
                     ))}
                   </div>
-                  <p className="text-sm text-muted-foreground">5-Star Rated Products</p>
+                  <p className="text-sm text-muted-foreground">{t('starsRated')}</p>
                 </div>
                 <div className="h-12 w-px bg-border" />
                 <div>
                   <p className="text-2xl font-bold text-primary">1000+</p>
-                  <p className="text-sm text-muted-foreground">Happy Customers</p>
+                  <p className="text-sm text-muted-foreground">{t('happyCustomers')}</p>
                 </div>
               </div>
             </div>
@@ -104,7 +107,7 @@ export default function Home() {
                   <div className="h-48 rounded-2xl bg-white shadow-lg p-6 flex items-center justify-center">
                     <div className="text-center">
                       <p className="text-4xl font-bold text-primary mb-2">30%</p>
-                      <p className="text-sm text-muted-foreground">OFF First Order</p>
+                      <p className="text-sm text-muted-foreground">{t('offFirstOrder')}</p>
                     </div>
                   </div>
                   <div className="h-64 rounded-2xl bg-gradient-to-br from-pink-100 to-pink-200 shadow-lg"></div>
@@ -114,7 +117,7 @@ export default function Home() {
                   <div className="h-48 rounded-2xl bg-white shadow-lg p-6 flex items-center justify-center">
                     <div className="text-center">
                       <Sparkles className="h-8 w-8 text-primary mx-auto mb-2" />
-                      <p className="text-sm font-medium">Premium Quality</p>
+                      <p className="text-sm font-medium">{t('premiumQuality')}</p>
                     </div>
                   </div>
                 </div>
@@ -128,11 +131,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Featured Products
+              {t('featuredProducts')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Handpicked favorites that our customers love. These are our top-rated
-              beauty essentials for your perfect routine.
+              {t('featuredDescription')}
             </p>
           </div>
 
@@ -146,15 +148,15 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No featured products available</p>
+              <p className="text-muted-foreground">{tc('noProducts')}</p>
             </div>
           )}
 
           <div className="text-center">
             <Link href="/products">
               <Button variant="outline" size="lg" className="gap-2">
-                View All Products
-                <ArrowRight className="h-4 w-4" />
+                {t('viewAll')}
+                {locale === 'ar' ? null : <ArrowRight className="h-4 w-4" />}
               </Button>
             </Link>
           </div>
@@ -167,10 +169,10 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="h-6 w-6 text-primary" />
-                <h2 className="text-3xl md:text-4xl font-bold">Best Sellers</h2>
+                <h2 className="text-3xl md:text-4xl font-bold">{t('bestSellers')}</h2>
               </div>
               <p className="text-muted-foreground">
-                Most popular products loved by our community
+                {t('bestSellersDescription')}
               </p>
             </div>
           </div>
@@ -185,7 +187,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No products available</p>
+              <p className="text-muted-foreground">{tc('noProducts')}</p>
             </div>
           )}
         </div>
@@ -198,9 +200,9 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                 <Sparkles className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Premium Quality</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('premiumQuality')}</h3>
               <p className="text-muted-foreground">
-                Authentic products from trusted brands
+                {t('trustedBrands')}
               </p>
             </div>
 
@@ -208,9 +210,9 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                 <Star className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Customer Reviews</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('customerReviews')}</h3>
               <p className="text-muted-foreground">
-                Real reviews from real customers
+                {t('realReviews')}
               </p>
             </div>
 
@@ -218,9 +220,9 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                 <TrendingUp className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Fast Delivery</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('fastDelivery')}</h3>
               <p className="text-muted-foreground">
-                Quick and reliable shipping
+                {t('fastDeliveryDescription')}
               </p>
             </div>
           </div>
@@ -235,10 +237,10 @@ export default function Home() {
               <span className="text-2xl font-bold">SetraStore</span>
             </div>
             <p className="text-background/80 mb-4">
-              Your destination for premium beauty products
+              {t('footerDescription')}
             </p>
             <p className="text-sm text-background/60">
-              © {new Date().getFullYear()} SetraStore. All rights reserved.
+              {t('allRightsReserved', { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>
@@ -246,3 +248,4 @@ export default function Home() {
     </div>
   );
 }
+

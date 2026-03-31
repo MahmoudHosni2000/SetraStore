@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { supabase, Order, OrderItem } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
@@ -10,8 +11,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MapPin, Phone, User } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: 'bg-yellow-500',
   processing: 'bg-blue-500',
   shipped: 'bg-purple-500',
@@ -26,6 +28,9 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('orders');
+  const tc = useTranslations('common');
+  const locale = useLocale();
 
   useEffect(() => {
     if (user) {
@@ -78,7 +83,7 @@ export default function OrderDetailPage() {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-lg text-muted-foreground">Order not found</p>
+          <p className="text-lg text-muted-foreground">{t('notFound') === 'Order not found' ? 'Order not found' : 'الطلب غير موجود'}</p>
         </div>
       </div>
     );
@@ -89,22 +94,22 @@ export default function OrderDetailPage() {
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Button variant="ghost" onClick={() => router.back()} className="mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Orders
+        <Button variant="ghost" onClick={() => router.push('/orders')} className="mb-6">
+          <ArrowLeft className={`h-4 w-4 ${locale === 'ar' ? 'ml-2' : 'mr-2'}`} />
+          {t('details.backToOrders') === 'Back to Orders' ? 'Back to Orders' : 'العودة للطلبات'}
         </Button>
 
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">
-              Order #{order.id.slice(0, 8)}
+              {t('orderNum', { id: order.id.slice(0, 8) })}
             </h1>
             <p className="text-muted-foreground">
-              Placed on {new Date(order.created_at).toLocaleDateString()}
+              {t('details.placedOn', { date: new Date(order.created_at).toLocaleDateString(locale) })}
             </p>
           </div>
           <Badge className={statusColors[order.status]}>
-            {order.status.toUpperCase()}
+            {t(`status.${order.status}` as any)}
           </Badge>
         </div>
 
@@ -112,12 +117,12 @@ export default function OrderDetailPage() {
           <Card>
             <CardContent className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Customer Information
+                <User className="h-5 w-5 text-primary" />
+                {t('details.shippingInfo')}
               </h3>
               <div className="space-y-2 text-sm">
                 <p>
-                  <span className="text-muted-foreground">Name:</span>{' '}
+                  <span className="text-muted-foreground">{t('details.customerName') === 'Name' ? 'Name' : 'الاسم'}:</span>{' '}
                   {order.customer_name}
                 </p>
                 <p className="flex items-start gap-2">
@@ -134,30 +139,30 @@ export default function OrderDetailPage() {
 
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-semibold mb-4">Order Summary</h3>
+              <h3 className="font-semibold mb-4">{t('details.summary')}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal:</span>
+                  <span className="text-muted-foreground">{t('details.subtotal') === 'Subtotal' ? 'Subtotal' : 'المجموع الفرعي'}:</span>
                   <span>${order.total_amount.toFixed(2)}</span>
                 </div>
                 {order.discount_amount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Discount:</span>
+                    <span>{t('details.discount') === 'Discount' ? 'Discount' : 'الخصم'}:</span>
                     <span>-${order.discount_amount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping:</span>
-                  <span>Free</span>
+                  <span className="text-muted-foreground">{t('details.shippingCost') === 'Shipping' ? 'Shipping' : 'الشحن'}:</span>
+                  <span>{t('details.shippingFree') === 'Free' ? 'Free' : 'مجاني'}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-border font-bold text-base">
-                  <span>Total:</span>
+                  <span>{t('details.total') === 'Total' ? 'Total' : 'الإجمالي'}:</span>
                   <span className="text-primary">
                     ${order.final_amount.toFixed(2)}
                   </span>
                 </div>
                 <p className="text-muted-foreground pt-2">
-                  Payment: {order.payment_method}
+                  {t('details.payment') === 'Payment' ? 'Payment' : 'الدفع'}: {order.payment_method === 'Cash on Delivery' ? t('cod') : order.payment_method}
                 </p>
               </div>
             </CardContent>
@@ -166,7 +171,7 @@ export default function OrderDetailPage() {
 
         <Card>
           <CardContent className="p-6">
-            <h3 className="font-semibold mb-4">Order Items</h3>
+            <h3 className="font-semibold mb-4">{t('details.items')}</h3>
             <div className="space-y-4">
               {orderItems.map((item) => (
                 <div
@@ -176,7 +181,7 @@ export default function OrderDetailPage() {
                   <div>
                     <p className="font-medium">{item.product_name}</p>
                     <p className="text-sm text-muted-foreground">
-                      Quantity: {item.quantity}
+                      {t('details.quantity') === 'Quantity' ? 'Quantity' : 'الكمية'}: {item.quantity}
                     </p>
                   </div>
                   <p className="font-semibold">
@@ -191,3 +196,4 @@ export default function OrderDetailPage() {
     </div>
   );
 }
+

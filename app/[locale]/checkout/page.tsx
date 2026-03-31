@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -13,11 +13,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingBag, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
   const { user, profile } = useAuth();
   const router = useRouter();
+  const t = useTranslations('checkout');
+  const tc = useTranslations('common');
+  const tcart = useTranslations('cart');
 
   const [name, setName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
@@ -52,19 +56,19 @@ export default function CheckoutPage() {
       if (error) throw error;
 
       if (!data) {
-        toast.error('Invalid or expired coupon code');
+        toast.error(t('invalidCoupon'));
         return;
       }
 
       if (data.expires_at && new Date(data.expires_at) < new Date()) {
-        toast.error('This coupon has expired');
+        toast.error(t('expiredCoupon'));
         return;
       }
 
       setAppliedCoupon(data);
-      toast.success(`Coupon applied! ${data.discount_percentage}% off`);
+      toast.success(t('couponApplied', { percent: data.discount_percentage }));
     } catch (error: any) {
-      toast.error('Error applying coupon');
+      toast.error(t('couponError'));
     } finally {
       setApplyingCoupon(false);
     }
@@ -74,12 +78,12 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (!user) {
-      toast.error('Please sign in to place an order');
+      toast.error(t('signInToast'));
       return;
     }
 
     if (!name || !phone || !address) {
-      toast.error('Please fill in all fields');
+      toast.error(t('fillFieldsToast'));
       return;
     }
 
@@ -126,10 +130,10 @@ export default function CheckoutPage() {
       }
 
       await clearCart();
-      toast.success('Order placed successfully!');
+      toast.success(t('orderSuccess'));
       router.push(`/orders/${order.id}`);
     } catch (error: any) {
-      toast.error(error.message || 'Error placing order');
+      toast.error(error.message || t('orderError'));
     } finally {
       setLoading(false);
     }
@@ -140,18 +144,18 @@ export default function CheckoutPage() {
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 
         <form onSubmit={handlePlaceOrder}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Delivery Information</CardTitle>
+                  <CardTitle>{t('deliveryInfo')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name *</Label>
+                    <Label htmlFor="name">{t('fullName')} *</Label>
                     <Input
                       id="name"
                       value={name}
@@ -161,7 +165,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Label htmlFor="phone">{t('phone')} *</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -172,12 +176,12 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="address">Delivery Address *</Label>
+                    <Label htmlFor="address">{t('address')} *</Label>
                     <Input
                       id="address"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Street, City, State, ZIP Code"
+                      placeholder={t('addressPlaceholder')}
                       required
                     />
                   </div>
@@ -186,15 +190,15 @@ export default function CheckoutPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Payment Method</CardTitle>
+                  <CardTitle>{t('paymentMethod')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2 p-4 border border-border rounded-lg bg-secondary/20">
                     <ShoppingBag className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="font-medium">Cash on Delivery</p>
+                      <p className="font-medium">{t('cod')}</p>
                       <p className="text-sm text-muted-foreground">
-                        Pay when you receive your order
+                        {t('codDescription')}
                       </p>
                     </div>
                   </div>
@@ -205,13 +209,13 @@ export default function CheckoutPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Tag className="h-5 w-5" />
-                    Apply Coupon
+                    {t('applyCoupon')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter coupon code"
+                      placeholder={t('couponPlaceholder')}
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       disabled={!!appliedCoupon}
@@ -225,7 +229,7 @@ export default function CheckoutPage() {
                           setCouponCode('');
                         }}
                       >
-                        Remove
+                        {t('removeCoupon')}
                       </Button>
                     ) : (
                       <Button
@@ -233,14 +237,14 @@ export default function CheckoutPage() {
                         onClick={handleApplyCoupon}
                         disabled={applyingCoupon || !couponCode}
                       >
-                        Apply
+                        {t('apply')}
                       </Button>
                     )}
                   </div>
                   {appliedCoupon && (
                     <div className="mt-2">
                       <Badge className="bg-green-500">
-                        {appliedCoupon.discount_percentage}% OFF Applied
+                        {t('couponOffer', { percent: appliedCoupon.discount_percentage })}
                       </Badge>
                     </div>
                   )}
@@ -251,7 +255,7 @@ export default function CheckoutPage() {
             <div>
               <Card className="sticky top-20">
                 <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+                  <CardTitle>{tcart('orderSummary')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -272,23 +276,23 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2 py-4 border-y border-border">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="text-muted-foreground">{tcart('subtotal')}</span>
                       <span>${cartTotal.toFixed(2)}</span>
                     </div>
                     {appliedCoupon && (
                       <div className="flex justify-between text-green-600">
-                        <span>Discount ({appliedCoupon.discount_percentage}%)</span>
+                        <span>{t('discount')} ({appliedCoupon.discount_percentage}%)</span>
                         <span>-${discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Shipping</span>
-                      <span>Free</span>
+                      <span className="text-muted-foreground">{tcart('shipping')}</span>
+                      <span>{tcart('shippingFree')}</span>
                     </div>
                   </div>
 
                   <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
+                    <span>{tcart('total')}</span>
                     <span className="text-primary">${finalAmount.toFixed(2)}</span>
                   </div>
 
@@ -298,11 +302,11 @@ export default function CheckoutPage() {
                     size="lg"
                     disabled={loading}
                   >
-                    {loading ? 'Placing Order...' : 'Place Order'}
+                    {loading ? tc('loading') : t('placeOrderBtn')}
                   </Button>
 
                   <p className="text-xs text-muted-foreground text-center">
-                    By placing your order, you agree to our terms and conditions
+                    {t('termsText')}
                   </p>
                 </CardContent>
               </Card>
@@ -313,3 +317,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

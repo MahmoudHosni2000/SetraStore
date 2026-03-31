@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
 import { supabase, Product, Review } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
@@ -13,8 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Heart, Star, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Heart, Star, ArrowLeft, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -29,6 +31,11 @@ export default function ProductDetailPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  
+  const t = useTranslations('productDetails');
+  const tcard = useTranslations('productCard');
+  const tc = useTranslations('common');
+  const locale = useLocale();
 
   useEffect(() => {
     fetchProduct();
@@ -48,7 +55,7 @@ export default function ProductDetailPage() {
       setProduct(data);
     } catch (error) {
       console.error('Error fetching product:', error);
-      toast.error('Product not found');
+      toast.error(t('notFound'));
     } finally {
       setLoading(false);
     }
@@ -88,7 +95,7 @@ export default function ProductDetailPage() {
 
   async function handleToggleWishlist() {
     if (!user) {
-      toast.error('Please sign in to add to wishlist');
+      toast.error(tcard('signInRequired'));
       return;
     }
 
@@ -100,23 +107,23 @@ export default function ProductDetailPage() {
           .eq('user_id', user.id)
           .eq('product_id', params.id);
         setIsWishlisted(false);
-        toast.success('Removed from wishlist');
+        toast.success(tcard('removedFromWishlist'));
       } else {
         await supabase.from('wishlist').insert({
           user_id: user.id,
           product_id: params.id as string,
         });
         setIsWishlisted(true);
-        toast.success('Added to wishlist');
+        toast.success(tcard('addedToWishlist'));
       }
     } catch (error: any) {
-      toast.error(error.message || 'Error updating wishlist');
+      toast.error(error.message || tcard('wishlistError'));
     }
   }
 
   async function handleSubmitReview() {
     if (!user) {
-      toast.error('Please sign in to leave a review');
+      toast.error(t('signInToReview'));
       return;
     }
 
@@ -130,13 +137,13 @@ export default function ProductDetailPage() {
       });
 
       if (error) throw error;
-      toast.success('Review submitted successfully');
+      toast.success(t('reviewSuccess'));
       setComment('');
       setRating(5);
       fetchReviews();
       fetchProduct();
     } catch (error: any) {
-      toast.error(error.message || 'Error submitting review');
+      toast.error(error.message || t('reviewError'));
     } finally {
       setSubmittingReview(false);
     }
@@ -156,10 +163,12 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-lg text-muted-foreground">Product not found</p>
-          <Button onClick={() => router.push('/products')} className="mt-4">
-            Back to Products
-          </Button>
+          <p className="text-lg text-muted-foreground">{t('notFound')}</p>
+          <Link href="/products">
+            <Button className="mt-4">
+              {t('backToProducts')}
+            </Button>
+          </Link>
         </div>
       </div>
     );
@@ -175,8 +184,8 @@ export default function ProductDetailPage() {
           onClick={() => router.back()}
           className="mb-6"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {locale === 'ar' ? <ArrowRight className="h-4 w-4 ml-2" /> : <ArrowLeft className="h-4 w-4 mr-2" />}
+          {t('back')}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
@@ -212,7 +221,7 @@ export default function ProductDetailPage() {
                 ))}
               </div>
               <span className="text-sm text-muted-foreground">
-                {product.rating.toFixed(1)} ({product.total_reviews} reviews)
+                {product.rating.toFixed(1)} ({t('reviewsCount', { count: product.total_reviews })})
               </span>
             </div>
 
@@ -228,7 +237,7 @@ export default function ProductDetailPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Quantity
+                    {t('quantity')}
                   </label>
                   <Select
                     value={quantity.toString()}
@@ -253,8 +262,8 @@ export default function ProductDetailPage() {
                     className="flex-1"
                     onClick={() => addToCart(product.id, quantity)}
                   >
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Cart
+                    <ShoppingCart className={`h-5 w-5 ${locale === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                    {tcard('add')}
                   </Button>
                   <Button
                     size="lg"
@@ -269,13 +278,13 @@ export default function ProductDetailPage() {
 
                 {product.stock <= 10 && (
                   <p className="text-sm text-orange-500">
-                    Only {product.stock} left in stock!
+                    {tcard('onlyLeft', { count: product.stock })}
                   </p>
                 )}
               </div>
             ) : (
               <Badge variant="destructive" className="text-lg py-2 px-4">
-                Out of Stock
+                {tcard('outOfStock')}
               </Badge>
             )}
           </div>
@@ -284,15 +293,15 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <div>
-              <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('customerReviews')}</h2>
 
               {user && (
                 <Card className="mb-6">
                   <CardContent className="pt-6 space-y-4">
-                    <h3 className="font-semibold">Write a Review</h3>
+                    <h3 className="font-semibold">{t('writeReview')}</h3>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Rating
+                        {t('rating')}
                       </label>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -314,10 +323,10 @@ export default function ProductDetailPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Comment
+                        {t('comment')}
                       </label>
                       <Textarea
-                        placeholder="Share your experience with this product..."
+                        placeholder={t('commentPlaceholder')}
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         rows={4}
@@ -327,7 +336,7 @@ export default function ProductDetailPage() {
                       onClick={handleSubmitReview}
                       disabled={submittingReview || !comment}
                     >
-                      {submittingReview ? 'Submitting...' : 'Submit Review'}
+                      {submittingReview ? tc('loading') : t('submitBtn')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -341,7 +350,7 @@ export default function ProductDetailPage() {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <p className="font-semibold">
-                              {review.profiles?.full_name || 'Anonymous'}
+                              {review.profiles?.full_name || t('anonymous')}
                             </p>
                             <div className="flex items-center gap-1 mt-1">
                               {[...Array(5)].map((_, i) => (
@@ -357,7 +366,7 @@ export default function ProductDetailPage() {
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(review.created_at).toLocaleDateString()}
+                            {new Date(review.created_at).toLocaleDateString(locale)}
                           </p>
                         </div>
                         {review.comment && (
@@ -370,7 +379,7 @@ export default function ProductDetailPage() {
                   ))
                 ) : (
                   <p className="text-center text-muted-foreground py-8">
-                    No reviews yet. Be the first to review this product!
+                    {t('noReviews')}
                   </p>
                 )}
               </div>
@@ -380,20 +389,20 @@ export default function ProductDetailPage() {
           <div>
             <Card>
               <CardContent className="pt-6 space-y-4">
-                <h3 className="font-semibold">Product Information</h3>
+                <h3 className="font-semibold">{t('productInfo')}</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Brand:</span>
+                    <span className="text-muted-foreground">{t('brand')}:</span>
                     <span className="font-medium">{product.brand}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Category:</span>
+                    <span className="text-muted-foreground">{t('category')}:</span>
                     <span className="font-medium">{product.category}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Availability:</span>
+                    <span className="text-muted-foreground">{t('availability')}:</span>
                     <span className="font-medium">
-                      {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                      {product.stock > 0 ? t('inStock') : tcard('outOfStock')}
                     </span>
                   </div>
                 </div>
@@ -405,3 +414,4 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+

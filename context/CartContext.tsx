@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, Product, CartItem } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 interface CartContextType {
@@ -23,6 +24,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<(CartItem & { products: Product })[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const t = useTranslations('cart');
 
   useEffect(() => {
     if (user) {
@@ -53,7 +55,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   async function addToCart(productId: string, quantity: number = 1) {
     if (!user) {
-      toast.error('Please sign in to add items to cart');
+      toast.error(t('signInRequired'));
       return;
     }
 
@@ -71,10 +73,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (error) throw error;
         await fetchCart();
-        toast.success('Item added to cart');
+        toast.success(t('addedToCart'));
       }
     } catch (error: any) {
-      toast.error(error.message || 'Error adding to cart');
+      toast.error(error.message || t('errorAdding'));
     }
   }
 
@@ -89,9 +91,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       await fetchCart();
-      toast.success('Item removed from cart');
+      toast.success(t('removedFromCart'));
     } catch (error: any) {
-      toast.error(error.message || 'Error removing from cart');
+      toast.error(error.message || t('errorRemoving'));
     }
   }
 
@@ -112,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       await fetchCart();
     } catch (error: any) {
-      toast.error(error.message || 'Error updating quantity');
+      toast.error(error.message || t('errorUpdating'));
     }
   }
 
@@ -128,7 +130,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       await fetchCart();
     } catch (error: any) {
-      toast.error(error.message || 'Error clearing cart');
+      toast.error(error.message || t('errorClearing'));
     }
   }
 

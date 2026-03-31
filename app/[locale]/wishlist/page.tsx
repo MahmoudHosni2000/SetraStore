@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { supabase, WishlistItem, Product } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
@@ -9,11 +9,14 @@ import ProductCard from '@/components/ProductCard';
 import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function WishlistPage() {
   const { user } = useAuth();
   const [wishlist, setWishlist] = useState<(WishlistItem & { products: Product })[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('wishlist');
+  const tc = useTranslations('common');
 
   useEffect(() => {
     if (user) {
@@ -43,12 +46,12 @@ export default function WishlistPage() {
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
           <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Please sign in</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('signInRequired')}</h2>
           <p className="text-muted-foreground mb-6">
-            Sign in to view your wishlist
+            {t('signInDescription')}
           </p>
           <Link href="/login">
-            <Button>Sign In</Button>
+            <Button>{tc('signIn')}</Button>
           </Link>
         </div>
       </div>
@@ -61,9 +64,9 @@ export default function WishlistPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">My Wishlist</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
           <p className="text-muted-foreground">
-            {wishlist.length} {wishlist.length === 1 ? 'item' : 'items'} saved for later
+            {t('itemsCount', { count: wishlist.length })}
           </p>
         </div>
 
@@ -83,12 +86,12 @@ export default function WishlistPage() {
         ) : (
           <div className="text-center py-12">
             <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Your wishlist is empty</h2>
+            <h2 className="text-xl font-semibold mb-2">{t('emptyWishlist')}</h2>
             <p className="text-muted-foreground mb-6">
-              Save your favorite products for later
+              {t('emptyDescription')}
             </p>
             <Link href="/products">
-              <Button>Discover Products</Button>
+              <Button>{t('discoverBtn')}</Button>
             </Link>
           </div>
         )}
@@ -96,3 +99,4 @@ export default function WishlistPage() {
     </div>
   );
 }
+

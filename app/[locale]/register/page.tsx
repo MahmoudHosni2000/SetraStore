@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
@@ -24,17 +24,19 @@ export default function RegisterPage() {
   const { signUp } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations('register');
+  const tc = useTranslations('common');
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+      toast.error(t('invalidImageToast'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be smaller than 5 MB');
+      toast.error(t('imageSizeToast'));
       return;
     }
 
@@ -52,21 +54,21 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('passwordsDontMatch'));
       return;
     }
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('passwordShort'));
       return;
     }
 
     setLoading(true);
     try {
       await signUp(email, password, fullName, avatarFile ?? undefined);
-      toast.success('Account created successfully! Please sign in.');
+      toast.success(t('successToast'));
       router.push('/login');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+      toast.error(error.message || t('errorToast'));
     } finally {
       setLoading(false);
     }
@@ -85,9 +87,9 @@ export default function RegisterPage() {
                 <Sparkles className="h-8 w-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl">Create Account</CardTitle>
+            <CardTitle className="text-2xl">{t('title')}</CardTitle>
             <CardDescription>
-              Join SetraStore and start shopping premium beauty products
+              {t('description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -95,7 +97,7 @@ export default function RegisterPage() {
               {/* Avatar Picker */}
               <div className="flex flex-col items-center gap-2 pb-2">
                 <Label className="text-sm font-medium self-start">
-                  Profile Picture <span className="text-muted-foreground font-normal">(optional)</span>
+                  {t('profilePicture')} <span className="text-muted-foreground font-normal">({t('optional')})</span>
                 </Label>
                 <div className="relative">
                   <button
@@ -123,14 +125,14 @@ export default function RegisterPage() {
                         ) : (
                           <Camera className="h-7 w-7 text-muted-foreground" />
                         )}
-                        <span className="text-[9px] text-muted-foreground font-medium">ADD PHOTO</span>
+                        <span className="text-[9px] text-muted-foreground font-medium uppercase">{t('addPhoto')}</span>
                       </div>
                     )}
                     {/* Hover overlay */}
                     {avatarPreview && (
                       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Camera className="h-6 w-6 text-white mb-1" />
-                        <span className="text-white text-[10px]">Change</span>
+                        <span className="text-white text-[10px]">{t('change')}</span>
                       </div>
                     )}
                   </button>
@@ -141,13 +143,13 @@ export default function RegisterPage() {
                       type="button"
                       onClick={removeAvatar}
                       className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-white rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-md"
-                      title="Remove photo"
+                      title={t('removePhoto')}
                     >
                       <X className="h-3 w-3" />
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">JPG, PNG or WebP · Max 5 MB</p>
+                <p className="text-xs text-muted-foreground">{t('imageFormatInfo')}</p>
 
                 <input
                   ref={fileInputRef}
@@ -160,7 +162,7 @@ export default function RegisterPage() {
 
               {/* Full Name */}
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t('fullName')}</Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -173,7 +175,7 @@ export default function RegisterPage() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -186,7 +188,7 @@ export default function RegisterPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -199,7 +201,7 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -211,14 +213,14 @@ export default function RegisterPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account…' : 'Sign Up'}
+                {loading ? tc('loading') : tc('signUp')}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Already have an account? </span>
+              <span className="text-muted-foreground">{t('alreadyAccount')} </span>
               <Link href="/login" className="text-primary font-medium hover:underline">
-                Sign in
+                {tc('signIn')}
               </Link>
             </div>
           </CardContent>
@@ -227,3 +229,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

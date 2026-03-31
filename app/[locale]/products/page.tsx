@@ -10,14 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, SlidersHorizontal } from 'lucide-react';
-
-const categories = ['All', 'Makeup', 'Skincare', 'Haircare', 'Fragrance'];
-const sortOptions = [
-  { label: 'Newest', value: 'newest' },
-  { label: 'Price: Low to High', value: 'price_asc' },
-  { label: 'Price: High to Low', value: 'price_desc' },
-  { label: 'Most Popular', value: 'popular' },
-];
+import { useTranslations } from 'next-intl';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -25,6 +18,18 @@ export default function ProductsPage() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const t = useTranslations('products');
+  const tc = useTranslations('common');
+  const tn = useTranslations('nav');
+
+  const categories = ['All', 'Makeup', 'Skincare', 'Haircare', 'Fragrance'];
+  const sortOptions = [
+    { label: t('sort.newest'), value: 'newest' },
+    { label: t('sort.priceAsc'), value: 'price_asc' },
+    { label: t('sort.priceDesc'), value: 'price_desc' },
+    { label: t('sort.popular'), value: 'popular' },
+  ];
+
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get('category') || 'All'
   );
@@ -104,15 +109,20 @@ export default function ProductsPage() {
     setFilteredProducts(filtered);
   }
 
+  const getCategoryName = (cat: string) => {
+    if (cat === 'All') return tc('allProducts');
+    return tn(cat.toLowerCase() as any);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">All Products</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
           <p className="text-muted-foreground">
-            Discover our complete collection of premium beauty products
+            {t('description')}
           </p>
         </div>
 
@@ -125,7 +135,7 @@ export default function ProductsPage() {
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <SlidersHorizontal className="h-4 w-4 mr-2" />
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
+                {showFilters ? t('hideFilters') : t('showFilters')}
               </Button>
 
               <div
@@ -133,20 +143,20 @@ export default function ProductsPage() {
                   }`}
               >
                 <div>
-                  <h3 className="font-semibold mb-3">Search</h3>
+                  <h3 className="font-semibold mb-3">{tc('search')}</h3>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search products..."
+                      placeholder={t('searchPlaceholder')}
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                       className="pl-9"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Category</h3>
+                  <h3 className="font-semibold mb-3">{tc('category')}</h3>
                   <div className="space-y-2">
                     {categories.map((category) => (
                       <button
@@ -157,26 +167,26 @@ export default function ProductsPage() {
                           : 'hover:bg-secondary'
                           }`}
                       >
-                        {category}
+                        {getCategoryName(category)}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Price Range</h3>
+                  <h3 className="font-semibold mb-3">{tc('priceRange')}</h3>
                   <div className="space-y-2">
                     <Input
                       type="number"
-                      placeholder="Min price"
+                      placeholder={t('minPrice')}
                       value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMinPrice(e.target.value)}
                     />
                     <Input
                       type="number"
-                      placeholder="Max price"
+                      placeholder={t('maxPrice')}
                       value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxPrice(e.target.value)}
                     />
                   </div>
                 </div>
@@ -191,7 +201,7 @@ export default function ProductsPage() {
                     setMaxPrice('');
                   }}
                 >
-                  Reset Filters
+                  {tc('resetFilters')}
                 </Button>
               </div>
             </div>
@@ -200,13 +210,12 @@ export default function ProductsPage() {
           <main className="flex-1">
             <div className="flex items-center justify-between mb-6">
               <p className="text-muted-foreground">
-                {filteredProducts.length} product
-                {filteredProducts.length !== 1 ? 's' : ''} found
+                {t('foundCount', { count: filteredProducts.length })}
               </p>
 
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('sortBy')} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortOptions.map((option) => (
@@ -229,7 +238,7 @@ export default function ProductsPage() {
             ) : (
               <div className="text-center py-12 bg-secondary/20 rounded-lg">
                 <p className="text-lg text-muted-foreground">
-                  No products found matching your criteria
+                  {t('noMatching')}
                 </p>
                 <Button
                   variant="outline"
@@ -241,7 +250,7 @@ export default function ProductsPage() {
                     setMaxPrice('');
                   }}
                 >
-                  Clear Filters
+                  {t('clearFilters')}
                 </Button>
               </div>
             )}
@@ -251,3 +260,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

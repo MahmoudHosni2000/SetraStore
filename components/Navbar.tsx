@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   ShoppingCart,
   Heart,
@@ -16,6 +16,7 @@ import {
   Settings,
   Sparkles,
   UserCircle2,
+  Languages,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,23 +29,31 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
-const categories = [
-  { name: 'Makeup', href: '/products?category=Makeup' },
-  { name: 'Skincare', href: '/products?category=Skincare' },
-  { name: 'Haircare', href: '/products?category=Haircare' },
-  { name: 'Fragrance', href: '/products?category=Fragrance' },
-];
-
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, profile, signOut, isAdmin } = useAuth();
   const { cartCount } = useCart();
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
+  const locale = useLocale();
+
+  const categories = [
+    { name: t('makeup'), href: '/products?category=Makeup', key: 'Makeup' },
+    { name: t('skincare'), href: '/products?category=Skincare', key: 'Skincare' },
+    { name: t('haircare'), href: '/products?category=Haircare', key: 'Haircare' },
+    { name: t('fragrance'), href: '/products?category=Fragrance', key: 'Fragrance' },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
+  };
+
+  const toggleLanguage = () => {
+    const nextLocale = locale === 'en' ? 'ar' : 'en';
+    router.replace(pathname, { locale: nextLocale });
   };
 
   return (
@@ -53,7 +62,6 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2">
-              {/* <Sparkles className="h-6 w-6 text-primary" /> */}
               <Image src="/Logo.jpeg" alt="SetraStore" width={120} height={120} className="h-14 w-14 rounded-full" />
               <span className="text-2xl font-bold text-primary">SetraStore</span>
             </Link>
@@ -61,9 +69,9 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-6">
               {categories.map((category) => (
                 <Link
-                  key={category.name}
+                  key={category.key}
                   href={category.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${pathname.includes(category.name) ? 'text-primary' : 'text-foreground'
+                  className={`text-sm font-medium transition-colors hover:text-primary ${pathname.includes(category.key) ? 'text-primary' : 'text-foreground'
                     }`}
                 >
                   {category.name}
@@ -73,6 +81,16 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleLanguage}
+              className="gap-2 font-medium"
+            >
+              <Languages className="h-4 w-4" />
+              {locale === 'en' ? 'العربية' : 'English'}
+            </Button>
+
             {user ? (
               <>
                 <Link href="/wishlist">
@@ -103,26 +121,26 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <div className="px-2 py-1.5 text-sm font-semibold">
-                      {profile?.full_name || 'User'}
+                      {profile?.full_name || tc('notSet')}
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer">
                         <UserCircle2 className="mr-2 h-4 w-4" />
-                        My Profile
+                        {t('myProfile')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/orders" className="cursor-pointer">
                         <Package className="mr-2 h-4 w-4" />
-                        My Orders
+                        {t('myOrders')}
                       </Link>
                     </DropdownMenuItem>
                     {isAdmin && (
                       <DropdownMenuItem asChild>
                         <Link href="/admin" className="cursor-pointer">
                           <Settings className="mr-2 h-4 w-4" />
-                          Admin Dashboard
+                          {t('adminDashboard')}
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -132,7 +150,7 @@ export default function Navbar() {
                       className="cursor-pointer"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
+                      {tc('signOut')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -140,16 +158,24 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/login">
-                  <Button variant="ghost">Sign In</Button>
+                  <Button variant="ghost">{tc('signIn')}</Button>
                 </Link>
                 <Link href="/register">
-                  <Button>Sign Up</Button>
+                  <Button>{tc('signUp')}</Button>
                 </Link>
               </div>
             )}
           </div>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleLanguage}
+              className="px-2"
+            >
+              {locale === 'en' ? 'AR' : 'EN'}
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -170,7 +196,7 @@ export default function Navbar() {
           <div className="px-4 py-4 space-y-3">
             {categories.map((category) => (
               <Link
-                key={category.name}
+                key={category.key}
                 href={category.href}
                 className="block py-2 text-base font-medium hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
@@ -187,14 +213,14 @@ export default function Navbar() {
                     className="block py-2 text-base font-medium hover:text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Wishlist
+                    {t('wishlist')}
                   </Link>
                   <Link
                     href="/cart"
                     className="flex items-center justify-between py-2 text-base font-medium hover:text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <span>Cart</span>
+                    <span>{t('cart')}</span>
                     {cartCount > 0 && (
                       <Badge variant="destructive">{cartCount}</Badge>
                     )}
@@ -204,14 +230,14 @@ export default function Navbar() {
                     className="block py-2 text-base font-medium hover:text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    My Profile
+                    {t('myProfile')}
                   </Link>
                   <Link
                     href="/orders"
                     className="block py-2 text-base font-medium hover:text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    My Orders
+                    {t('myOrders')}
                   </Link>
                   {isAdmin && (
                     <Link
@@ -219,7 +245,7 @@ export default function Navbar() {
                       className="block py-2 text-base font-medium hover:text-primary"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Admin Dashboard
+                      {t('adminDashboard')}
                     </Link>
                   )}
                   <button
@@ -229,7 +255,7 @@ export default function Navbar() {
                     }}
                     className="block w-full text-left py-2 text-base font-medium hover:text-primary"
                   >
-                    Sign Out
+                    {tc('signOut')}
                   </button>
                 </div>
               </>
@@ -240,14 +266,14 @@ export default function Navbar() {
                   className="block py-2 text-base font-medium hover:text-primary"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Sign In
+                  {tc('signIn')}
                 </Link>
                 <Link
                   href="/register"
                   className="block py-2 text-base font-medium hover:text-primary"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Sign Up
+                  {tc('signUp')}
                 </Link>
               </div>
             )}
@@ -257,3 +283,4 @@ export default function Navbar() {
     </nav>
   );
 }
+

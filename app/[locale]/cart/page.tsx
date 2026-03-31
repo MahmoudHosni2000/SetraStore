@@ -1,20 +1,22 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, cartTotal, loading } = useCart();
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations('cart');
+  const tc = useTranslations('common');
 
   if (!user) {
     return (
@@ -22,12 +24,12 @@ export default function CartPage() {
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
           <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Please sign in</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('signInRequired')}</h2>
           <p className="text-muted-foreground mb-6">
-            Sign in to view your cart and checkout
+            {t('signInDescription')}
           </p>
           <Link href="/login">
-            <Button>Sign In</Button>
+            <Button>{tc('signIn')}</Button>
           </Link>
         </div>
       </div>
@@ -40,12 +42,12 @@ export default function CartPage() {
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
           <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('emptyCart')}</h2>
           <p className="text-muted-foreground mb-6">
-            Start adding some products to your cart!
+            {t('emptyDescription')}
           </p>
           <Link href="/products">
-            <Button>Continue Shopping</Button>
+            <Button>{tc('continueShopping')}</Button>
           </Link>
         </div>
       </div>
@@ -57,7 +59,7 @@ export default function CartPage() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
@@ -139,21 +141,21 @@ export default function CartPage() {
           <div>
             <Card className="sticky top-20">
               <CardContent className="p-6 space-y-4">
-                <h2 className="text-xl font-bold">Order Summary</h2>
+                <h2 className="text-xl font-bold">{t('orderSummary')}</h2>
 
                 <div className="space-y-2 py-4 border-y border-border">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-muted-foreground">{t('subtotal')}</span>
                     <span className="font-medium">${cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">Free</span>
+                    <span className="text-muted-foreground">{t('shipping')}</span>
+                    <span className="font-medium">{t('shippingFree')}</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
+                  <span>{t('total')}</span>
                   <span className="text-primary">${cartTotal.toFixed(2)}</span>
                 </div>
 
@@ -163,12 +165,12 @@ export default function CartPage() {
                   onClick={() => router.push('/checkout')}
                   disabled={loading}
                 >
-                  Proceed to Checkout
+                  {t('checkoutBtn')}
                 </Button>
 
-                <Link href="/products">
+                <Link href="/products" className="block text-center">
                   <Button variant="outline" className="w-full">
-                    Continue Shopping
+                    {tc('continueShopping')}
                   </Button>
                 </Link>
               </CardContent>
@@ -179,3 +181,4 @@ export default function CartPage() {
     </div>
   );
 }
+
