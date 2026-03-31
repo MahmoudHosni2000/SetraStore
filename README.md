@@ -2,6 +2,16 @@
 
 A modern, full-featured e-commerce application built with **Next.js 16.2.1**, **React 19**, Supabase, and TypeScript for selling cosmetics and beauty products.
 
+## Screenshots
+
+<div align="center">
+  <h3>Home Page</h3>
+  <img src="public/screenshots/home.png" alt="SetraStore Home Page" width="800px">
+  
+  <h3>Product Listing</h3>
+  <img src="public/screenshots/products.png" alt="SetraStore Products Page" width="800px">
+</div>
+
 ## Features
 
 ### User Features
