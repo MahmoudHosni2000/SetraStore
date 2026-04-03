@@ -22,7 +22,7 @@ export default function ProductsPage() {
   const tc = useTranslations('common');
   const tn = useTranslations('nav');
 
-  const categories = ['All', 'Makeup', 'Skincare', 'Haircare', 'Fragrance'];
+  const categories = ['All', 'Makeup', 'Skincare', 'Haircare', 'Fragrance', 'Bath & Body', 'Men\'s Grooming', 'Tools & Accessories', 'Wellness', 'Sun Care'];
   const sortOptions = [
     { label: t('sort.newest'), value: 'newest' },
     { label: t('sort.priceAsc'), value: 'price_asc' },
@@ -134,7 +134,7 @@ export default function ProductsPage() {
                 className="w-full lg:hidden mb-4"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                <SlidersHorizontal className="h-4 w-4 me-2" />
                 {showFilters ? t('hideFilters') : t('showFilters')}
               </Button>
 
@@ -145,12 +145,12 @@ export default function ProductsPage() {
                 <div>
                   <h3 className="font-semibold mb-3">{tc('search')}</h3>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder={t('searchPlaceholder')}
                       value={searchQuery}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                      className="pl-9"
+                      className="ps-9"
                     />
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function ProductsPage() {
                       <button
                         key={category}
                         onClick={() => setSelectedCategory(category)}
-                        className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === category
+                        className={`block w-full text-start px-3 py-2 rounded-lg transition-colors ${selectedCategory === category
                           ? 'bg-primary text-primary-foreground'
                           : 'hover:bg-secondary'
                           }`}

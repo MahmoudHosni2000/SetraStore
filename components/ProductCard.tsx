@@ -30,6 +30,7 @@ export default function ProductCard({
   const [isWishlisted, setIsWishlisted] = useState(isInWishlist);
   const [loading, setLoading] = useState(false);
   const t = useTranslations('productCard');
+  const tc = useTranslations('common');
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -79,8 +80,8 @@ export default function ProductCard({
 
   return (
     <Link href={`/products/${product.id}`}>
-      <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border h-full">
-        <div className="relative aspect-square overflow-hidden bg-secondary">
+      <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border h-full bg-card">
+        <div className="relative aspect-square overflow-hidden bg-muted/30">
           <Image
             src={product.image_url}
             alt={product.name}
@@ -132,7 +133,7 @@ export default function ProductCard({
                     className={`h-3 w-3 ${
                       i < Math.round(product.rating)
                         ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300'
+                        : 'text-muted-foreground'
                     }`}
                   />
                 ))}
@@ -144,7 +145,7 @@ export default function ProductCard({
 
             <div className="flex items-center justify-between">
               <span className="text-xl font-bold text-primary">
-                ${product.price.toFixed(2)}
+                {tc('currencySymbol')} {product.price.toFixed(2)}
               </span>
               {product.stock > 0 && (
                 <Button
@@ -159,7 +160,7 @@ export default function ProductCard({
             </div>
 
             {product.stock > 0 && product.stock <= 10 && (
-              <p className="text-xs text-orange-500">
+              <p className="text-xs text-amber-600 dark:text-amber-400">
                 {t('onlyLeft', { count: product.stock })}
               </p>
             )}

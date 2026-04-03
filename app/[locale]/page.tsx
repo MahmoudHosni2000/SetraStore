@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import ProductCard from '@/components/ProductCard';
 import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Star, TrendingUp } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, TrendingUp, Gift, ShoppingBag, Heart, Award, Tag } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 
 export default function Home() {
@@ -49,8 +49,8 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="relative bg-gradient-to-br from-pink-50 via-white to-beige-50 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0iI2Y5YThjZiIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIuMiIvPjwvZz48L3N2Zz4=')] opacity-30"></div>
+      <section className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 overflow-hidden">
+        <div className="absolute inset-0 bg-primary/5 opacity-30"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -73,7 +73,7 @@ export default function Home() {
                 <Link href="/products">
                   <Button size="lg" className="gap-2">
                     {t('shopNow')}
-                    {locale === 'ar' ? null : <ArrowRight className="h-4 w-4" />}
+                    <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                   </Button>
                 </Link>
                 <Link href="/products?category=Skincare">
@@ -104,19 +104,24 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl blur-3xl"></div>
               <div className="relative grid grid-cols-2 gap-4">
                 <div className="space-y-4">
-                  <div className="h-48 rounded-2xl bg-white shadow-lg p-6 flex items-center justify-center">
+                  <div className="h-48 rounded-2xl bg-card border border-border shadow-lg p-6 flex items-center justify-center">
                     <div className="text-center">
+                      <Tag className="h-8 w-8 text-primary mx-auto mb-2 opacity-50" />
                       <p className="text-4xl font-bold text-primary mb-2">30%</p>
                       <p className="text-sm text-muted-foreground">{t('offFirstOrder')}</p>
                     </div>
                   </div>
-                  <div className="h-64 rounded-2xl bg-gradient-to-br from-pink-100 to-pink-200 shadow-lg"></div>
+                  <div className="h-64 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/30 shadow-lg flex items-center justify-center">
+                    <Heart className="h-16 w-16 text-primary/40 animate-pulse" />
+                  </div>
                 </div>
                 <div className="space-y-4 pt-12">
-                  <div className="h-64 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 shadow-lg"></div>
-                  <div className="h-48 rounded-2xl bg-white shadow-lg p-6 flex items-center justify-center">
+                  <div className="h-64 rounded-2xl bg-gradient-to-br from-accent/10 to-accent/30 shadow-lg flex items-center justify-center">
+                    <ShoppingBag className="h-16 w-16 text-accent-foreground/40 animate-bounce" />
+                  </div>
+                  <div className="h-48 rounded-2xl bg-card border border-border shadow-lg p-6 flex items-center justify-center">
                     <div className="text-center">
-                      <Sparkles className="h-8 w-8 text-primary mx-auto mb-2" />
+                      <Award className="h-8 w-8 text-primary mx-auto mb-2" />
                       <p className="text-sm font-medium">{t('premiumQuality')}</p>
                     </div>
                   </div>
@@ -127,7 +132,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -156,7 +161,7 @@ export default function Home() {
             <Link href="/products">
               <Button variant="outline" size="lg" className="gap-2">
                 {t('viewAll')}
-                {locale === 'ar' ? null : <ArrowRight className="h-4 w-4" />}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Button>
             </Link>
           </div>
@@ -229,17 +234,17 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-foreground text-background py-12">
+      <footer className="bg-card text-foreground border-t border-border py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Sparkles className="h-6 w-6" />
+              <Sparkles className="h-6 w-6 text-primary" />
               <span className="text-2xl font-bold">SetraStore</span>
             </div>
-            <p className="text-background/80 mb-4">
+            <p className="text-muted-foreground mb-4">
               {t('footerDescription')}
             </p>
-            <p className="text-sm text-background/60">
+            <p className="text-xs text-muted-foreground">
               {t('allRightsReserved', { year: new Date().getFullYear() })}
             </p>
           </div>

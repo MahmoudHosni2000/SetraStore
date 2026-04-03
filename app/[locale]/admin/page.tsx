@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { supabase, Product, Order } from '@/lib/supabase';
+import { supabase, Product, Order, Profile } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Loading from '@/components/Loading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,16 +13,20 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Package, ShoppingBag, DollarSign, Users, Plus, CreditCard as Edit, Trash2 } from 'lucide-react';
+import { Package, ShoppingBag, DollarSign, Users, Plus, CreditCard as Edit, Trash2, LayoutDashboard } from 'lucide-react';
+import { DashboardCharts } from './DashboardCharts';
 import { toast } from 'sonner';
 
 export default function AdminPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
+  const tc = useTranslations('common');
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState({ totalProducts: 0, totalOrders: 0, revenue: 0, customers: 0 });
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,7 +56,7 @@ export default function AdminPage() {
       const [productsRes, ordersRes, profilesRes] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('orders').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('id'),
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       ]);
 
       const productsData = productsRes.data || [];
@@ -61,6 +65,7 @@ export default function AdminPage() {
 
       setProducts(productsData);
       setOrders(ordersData);
+      setProfiles(profilesRes.data || []);
       setStats({
         totalProducts: productsData.length,
         totalOrders: ordersData.length,
@@ -132,6 +137,25 @@ export default function AdminPage() {
       fetchData();
     } catch (error: any) {
       toast.error(error.message || 'Error updating order');
+    }
+  }
+  
+  async function handleDeleteUser(profileId: string) {
+    const targetProfile = profiles.find(p => p.id === profileId);
+    if (targetProfile?.is_admin) {
+      toast.error('Admin accounts cannot be deleted');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this user profile?')) return;
+    
+    try {
+      const { error } = await supabase.rpc('delete_user_by_admin', { target_user_id: profileId });
+      if (error) throw error;
+      toast.success('User account deleted successfully');
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message || 'Error deleting user account');
     }
   }
 
@@ -230,11 +254,20 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        <Tabs defaultValue="products" className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="overview">
+              <LayoutDashboard className="h-4 w-4 me-2" />
+              Overview
+            </TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview">
+            <DashboardCharts orders={orders} products={products} />
+          </TabsContent>
 
           <TabsContent value="products" className="space-y-4">
             <div className="flex justify-between items-center">
@@ -242,7 +275,7 @@ export default function AdminPage() {
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => openEditDialog()}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4 me-2" />
                     Add Product
                   </Button>
                 </DialogTrigger>
@@ -415,7 +448,7 @@ export default function AdminPage() {
                           {new Date(order.created_at).toLocaleString()}
                         </p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-end">
                         <p className="text-xl font-bold text-primary">
                           ${order.final_amount.toFixed(2)}
                         </p>
@@ -447,6 +480,56 @@ export default function AdminPage() {
                         {order.customer_address}
                       </p>
                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-4">
+            <h2 className="text-xl font-semibold">User Management</h2>
+            <div className="grid gap-4">
+              {profiles.map((profile) => (
+                <Card key={profile.id}>
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
+                        {profile.avatar_url ? (
+                          <img
+                            src={profile.avatar_url}
+                            alt={profile.full_name || ''}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Users className="h-6 w-6 text-primary" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold flex items-center gap-2">
+                          {profile.full_name || 'No Name'}
+                          {profile.is_admin && (
+                            <Badge variant="secondary">Admin</Badge>
+                          )}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">{profile.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Joined: {new Date(profile.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    {!profile.is_admin ? (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDeleteUser(profile.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground border-muted-foreground/20">
+                        {tc('systemProtected')}
+                      </Badge>
+                    )}
                   </CardContent>
                 </Card>
               ))}

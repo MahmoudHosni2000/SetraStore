@@ -17,6 +17,7 @@ import {
   Sparkles,
   UserCircle2,
   Languages,
+  LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { ThemeToggle } from './ThemeToggle';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,7 +50,6 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
   };
 
   const toggleLanguage = () => {
@@ -57,13 +58,25 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/Logo.jpeg" alt="SetraStore" width={120} height={120} className="h-14 w-14 rounded-full" />
-              <span className="text-2xl font-bold text-primary">SetraStore</span>
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="relative flex items-center justify-center">
+                {/* Glow pulse ring */}
+                <span className="absolute inset-0 rounded-full bg-primary/20 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] scale-100" />
+                {/* Soft gradient border ring */}
+                <span className="absolute -inset-[2px] rounded-full bg-gradient-to-tr from-primary via-emerald-300 to-primary opacity-60 animate-[spin_6s_linear_infinite] blur-[2px]" />
+                <Image
+                  src="/Logo.jpeg"
+                  alt="SetraStore"
+                  width={120}
+                  height={120}
+                  className="relative h-14 w-14 rounded-full ring-2 ring-background transition-transform duration-500 group-hover:scale-110"
+                />
+              </div>
+              <span className="text-2xl font-bold text-primary transition-colors duration-300 group-hover:text-primary/80">SetraStore</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-6">
@@ -91,6 +104,8 @@ export default function Navbar() {
               {locale === 'en' ? 'العربية' : 'English'}
             </Button>
 
+            <ThemeToggle />
+
             {user ? (
               <>
                 <Link href="/wishlist">
@@ -113,41 +128,41 @@ export default function Navbar() {
                   </Button>
                 </Link>
 
-                <DropdownMenu>
+                <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
                       <User className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-48" >
                     <div className="px-2 py-1.5 text-sm font-semibold">
                       {profile?.full_name || tc('notSet')}
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem className='gap-2' asChild>
                       <Link href="/profile" className="cursor-pointer">
-                        <UserCircle2 className="mr-2 h-4 w-4" />
+                        <Settings className="mr-2 h-4 w-4" />
                         {t('myProfile')}
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem className='gap-2' asChild>
                       <Link href="/orders" className="cursor-pointer">
                         <Package className="mr-2 h-4 w-4" />
                         {t('myOrders')}
                       </Link>
                     </DropdownMenuItem>
                     {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin" className="cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
-                          {t('adminDashboard')}
+                      <DropdownMenuItem asChild className='gap-2'>
+                        <Link href="/dashboard" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          {t('dashboard')}
                         </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleSignOut}
-                      className="cursor-pointer"
+                      className="cursor-pointer gap-2"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       {tc('signOut')}
@@ -176,6 +191,7 @@ export default function Navbar() {
             >
               {locale === 'en' ? 'AR' : 'EN'}
             </Button>
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
@@ -241,11 +257,11 @@ export default function Navbar() {
                   </Link>
                   {isAdmin && (
                     <Link
-                      href="/admin"
+                      href="/dashboard"
                       className="block py-2 text-base font-medium hover:text-primary"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      {t('adminDashboard')}
+                      {t('dashboard')}
                     </Link>
                   )}
                   <button

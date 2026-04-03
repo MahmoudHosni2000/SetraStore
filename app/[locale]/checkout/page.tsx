@@ -30,6 +30,26 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetchAvailableCoupons();
+  }, []);
+
+  async function fetchAvailableCoupons() {
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('active', true)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+      if (error) throw error;
+      setAvailableCoupons(data || []);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+  }
 
   if (!user || cart.length === 0) {
     router.push('/cart');
@@ -41,15 +61,16 @@ export default function CheckoutPage() {
     : 0;
   const finalAmount = cartTotal - discountAmount;
 
-  async function handleApplyCoupon() {
-    if (!couponCode) return;
+  async function handleApplyCoupon(code?: string) {
+    const codeToApply = code || couponCode;
+    if (!codeToApply) return;
 
     setApplyingCoupon(true);
     try {
       const { data, error } = await supabase
         .from('coupons')
         .select('*')
-        .eq('code', couponCode.toUpperCase())
+        .eq('code', codeToApply.toUpperCase())
         .eq('active', true)
         .maybeSingle();
 
@@ -66,6 +87,7 @@ export default function CheckoutPage() {
       }
 
       setAppliedCoupon(data);
+      setCouponCode(data.code);
       toast.success(t('couponApplied', { percent: data.discount_percentage }));
     } catch (error: any) {
       toast.error(t('couponError'));
@@ -193,10 +215,10 @@ export default function CheckoutPage() {
                   <CardTitle>{t('paymentMethod')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-2 p-4 border border-border rounded-lg bg-secondary/20">
+                  <div className="flex items-center gap-2 p-4 border border-border rounded-lg bg-muted/30">
                     <ShoppingBag className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="font-medium">{t('cod')}</p>
+                      <p className="font-medium text-foreground">{t('cod')}</p>
                       <p className="text-sm text-muted-foreground">
                         {t('codDescription')}
                       </p>
@@ -234,7 +256,7 @@ export default function CheckoutPage() {
                     ) : (
                       <Button
                         type="button"
-                        onClick={handleApplyCoupon}
+                        onClick={() => handleApplyCoupon()}
                         disabled={applyingCoupon || !couponCode}
                       >
                         {t('apply')}
@@ -242,10 +264,54 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   {appliedCoupon && (
-                    <div className="mt-2">
-                      <Badge className="bg-green-500">
-                        {t('couponOffer', { percent: appliedCoupon.discount_percentage })}
-                      </Badge>
+                    <div className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                      <Tag className="h-4 w-4" />
+                      {t('alreadyApplied')}! {appliedCoupon.discount_percentage}% OFF
+                    </div>
+                  )}
+
+                  {availableCoupons.length > 0 && (
+                    <div className="mt-6 space-y-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        {t('availableCoupons')}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {availableCoupons.map((coupon) => (
+                          <div
+                            key={coupon.id}
+                            className={`p-3 border-2 rounded-xl transition-all cursor-pointer relative overflow-hidden group ${
+                              appliedCoupon?.code === coupon.code
+                                ? 'border-primary bg-primary/10'
+                                : 'border-dashed border-border hover:border-primary/50 bg-muted/20'
+                            }`}
+                            onClick={() => !appliedCoupon && handleApplyCoupon(coupon.code)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-bold text-lg text-primary">{coupon.code}</p>
+                                <p className="text-sm font-medium">{coupon.discount_percentage}% OFF</p>
+                              </div>
+                              {appliedCoupon?.code === coupon.code ? (
+                                <Badge variant="default" className="text-[10px] h-5">
+                                  {t('alreadyApplied')}
+                                </Badge>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                  disabled={!!appliedCoupon}
+                                >
+                                  {t('apply')}
+                                </Button>
+                              )}
+                            </div>
+                            <div className="absolute -right-2 -bottom-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                              <Tag className="h-12 w-12 rotate-12" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -268,7 +334,7 @@ export default function CheckoutPage() {
                           {item.products.name} x{item.quantity}
                         </span>
                         <span>
-                          ${(item.products.price * item.quantity).toFixed(2)}
+                          {tc('currencySymbol')} {(item.products.price * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     ))}
@@ -277,12 +343,12 @@ export default function CheckoutPage() {
                   <div className="space-y-2 py-4 border-y border-border">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{tcart('subtotal')}</span>
-                      <span>${cartTotal.toFixed(2)}</span>
+                      <span>{tc('currencySymbol')} {cartTotal.toFixed(2)}</span>
                     </div>
                     {appliedCoupon && (
-                      <div className="flex justify-between text-green-600">
+                      <div className="flex justify-between text-green-600 dark:text-green-400">
                         <span>{t('discount')} ({appliedCoupon.discount_percentage}%)</span>
-                        <span>-${discountAmount.toFixed(2)}</span>
+                        <span>-{tc('currencySymbol')} {discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
@@ -293,7 +359,7 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between text-lg font-bold">
                     <span>{tcart('total')}</span>
-                    <span className="text-primary">${finalAmount.toFixed(2)}</span>
+                    <span className="text-primary">{tc('currencySymbol')} {finalAmount.toFixed(2)}</span>
                   </div>
 
                   <Button

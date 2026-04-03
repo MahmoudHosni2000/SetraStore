@@ -184,12 +184,12 @@ export default function ProductDetailPage() {
           onClick={() => router.back()}
           className="mb-6"
         >
-          {locale === 'ar' ? <ArrowRight className="h-4 w-4 ml-2" /> : <ArrowLeft className="h-4 w-4 mr-2" />}
+          {<ArrowLeft className="h-4 w-4 me-2 rtl:rotate-180" />}
           {t('back')}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted/30 border border-border/50">
             <Image
               src={product.image_url}
               alt={product.name}
@@ -215,7 +215,7 @@ export default function ProductDetailPage() {
                     className={`h-5 w-5 ${
                       i < Math.round(product.rating)
                         ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300'
+                        : 'text-muted-foreground/30'
                     }`}
                   />
                 ))}
@@ -226,7 +226,7 @@ export default function ProductDetailPage() {
             </div>
 
             <p className="text-4xl font-bold text-primary">
-              ${product.price.toFixed(2)}
+              {tc('currencySymbol')} {product.price.toFixed(2)}
             </p>
 
             <p className="text-muted-foreground leading-relaxed">
@@ -262,7 +262,7 @@ export default function ProductDetailPage() {
                     className="flex-1"
                     onClick={() => addToCart(product.id, quantity)}
                   >
-                    <ShoppingCart className={`h-5 w-5 ${locale === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                    <ShoppingCart className="h-5 w-5 me-2" />
                     {tcard('add')}
                   </Button>
                   <Button
@@ -277,7 +277,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {product.stock <= 10 && (
-                  <p className="text-sm text-orange-500">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
                     {tcard('onlyLeft', { count: product.stock })}
                   </p>
                 )}
@@ -314,7 +314,7 @@ export default function ProductDetailPage() {
                               className={`h-6 w-6 ${
                                 star <= rating
                                   ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
+                                  : 'text-muted-foreground/30'
                               }`}
                             />
                           </button>
@@ -359,7 +359,7 @@ export default function ProductDetailPage() {
                                   className={`h-4 w-4 ${
                                     i < review.rating
                                       ? 'fill-yellow-400 text-yellow-400'
-                                      : 'text-gray-300'
+                                      : 'text-muted-foreground/30'
                                   }`}
                                 />
                               ))}

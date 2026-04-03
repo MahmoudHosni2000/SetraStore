@@ -15,7 +15,20 @@
     "totalOrders": "إجمالي الطلبات",
     "accountType": "نوع الحساب",
     "verified": "موثق",
-    "notSet": "غير محدد"
+    "notSet": "غير محدد",
+    "systemProtected": "محمي من النظام",
+    "adminAccountProtectedMessage": "حسابات المسؤولين محمية من الحذف لضمان بقاء مسؤول عن النظام.",
+    "currencySymbol": "ج.م",
+    "actions": "إجراءات",
+    "noName": "بدون اسم",
+    "joined": "انضم: {date}",
+    "description": "الوصف",
+    "add": "إضافة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "profile": {
+      "admin": "مسؤول"
+    }
   },
   "metadata": {
     "title": "سيترا ستور - منتجات تجميل فاخرة",
@@ -26,10 +39,16 @@
     "skincare": "العناية بالبشرة",
     "haircare": "العناية بالشعر",
     "fragrance": "العطور",
+    "bath & body": "الاستحمام والجسم",
+    "men's grooming": "العناية بالرجل",
+    "tools & accessories": "الأدوات والإكسسوارات",
+    "wellness": "الصحة والعافية",
+    "sun care": "العناية بالشمس",
     "myProfile": "ملفي الشخصي",
     "myOrders": "طلباتي",
     "wishlist": "قائمة الأمنيات",
     "cart": "العربة",
+    "dashboard": "لوحة التحكم",
     "adminDashboard": "لوحة الإدارة"
   },
   "home": {
@@ -135,7 +154,11 @@
     "couponApplied": "تم تطبيق الكوبون! خصم {percent}%",
     "couponError": "خطأ في تطبيق الكوبون",
     "signInToast": "يرجى تسجيل الدخول لتقديم طلب",
-    "fillFieldsToast": "يرجى ملء جميع الحقول"
+    "fillFieldsToast": "يرجى ملء جميع الحقول",
+    "availableCoupons": "الكوبونات المتاحة",
+    "clickToApply": "انقر للتطبيق",
+    "copyCode": "نسخ الرمز",
+    "alreadyApplied": "تم التطبيق"
   },
   "orders": {
     "title": "طلباتي",
@@ -251,7 +274,13 @@
     "passwordsDontMatch": "كلمات المرور الجديدة غير متطابقة",
     "passwordShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
     "passwordSuccess": "تم تغيير كلمة المرور بنجاح!",
-    "passwordError": "فشل تغيير كلمة المرور"
+    "passwordError": "فشل تغيير كلمة المرور",
+    "dangerZone": "منطقة الخطر",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountDescription": "سيؤدي هذا الإجراء إلى حذف ملفك الشخصي وجميع بياناتك المرتبطة به بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteConfirm": "هل أنت متأكد من رغبتك في حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteSuccess": "تم حذف الحساب بنجاح",
+    "deleteError": "فشل حذف الحساب"
   },
   "productDetails": {
     "notFound": "المنتج غير موجود",
@@ -275,5 +304,44 @@
     "signInToReview": "يرجى تسجيل الدخول لترك مراجعة",
     "reviewSuccess": "تم إرسال المراجعة بنجاح",
     "reviewError": "خطأ في إرسال المراجعة"
+  },
+  "dashboard": {
+    "title": "لوحة الإدارة",
+    "tabs": {
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "users": "المستخدمين",
+      "coupons": "الكوبونات"
+    },
+    "stats": {
+      "totalProducts": "إجمالي المنتجات",
+      "totalOrders": "إجمالي الطلبات",
+      "revenue": "الإيرادات",
+      "customers": "العملاء"
+    },
+    "management": {
+      "products": "إدارة المنتجات",
+      "orders": "إدارة الطلبات",
+      "users": "إدارة المستخدمين",
+      "coupons": "إدارة الكوبونات"
+    },
+    "actions": {
+      "addProduct": "إضافة منتج",
+      "addCoupon": "إضافة كوبون",
+      "editProduct": "تعديل المنتج",
+      "editCoupon": "تعديل الكوبون",
+      "saveChanges": "حفظ التغييرات",
+      "active": "نشط"
+    },
+    "products": {
+      "name": "اسم المنتج",
+      "price": "السعر",
+      "stock": "المخزن",
+      "category": "الفئة",
+      "brand": "العلامة التجارية",
+      "image": "صورة المنتج",
+      "uploadImage": "رفع صورة",
+      "isFeatured": "منتج مميز"
+    }
   }
 }

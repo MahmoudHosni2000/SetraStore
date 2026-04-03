@@ -95,7 +95,7 @@ export default function OrderDetailPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Button variant="ghost" onClick={() => router.push('/orders')} className="mb-6">
-          <ArrowLeft className={`h-4 w-4 ${locale === 'ar' ? 'ml-2' : 'mr-2'}`} />
+          <ArrowLeft className="h-4 w-4 me-2 rtl:rotate-180" />
           {t('details.backToOrders') === 'Back to Orders' ? 'Back to Orders' : 'العودة للطلبات'}
         </Button>
 
@@ -143,12 +143,12 @@ export default function OrderDetailPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('details.subtotal') === 'Subtotal' ? 'Subtotal' : 'المجموع الفرعي'}:</span>
-                  <span>${order.total_amount.toFixed(2)}</span>
+                  <span>{tc('currencySymbol')} {order.total_amount.toFixed(2)}</span>
                 </div>
                 {order.discount_amount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>{t('details.discount') === 'Discount' ? 'Discount' : 'الخصم'}:</span>
-                    <span>-${order.discount_amount.toFixed(2)}</span>
+                    <span>-{tc('currencySymbol')} {order.discount_amount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
@@ -158,7 +158,7 @@ export default function OrderDetailPage() {
                 <div className="flex justify-between pt-2 border-t border-border font-bold text-base">
                   <span>{t('details.total') === 'Total' ? 'Total' : 'الإجمالي'}:</span>
                   <span className="text-primary">
-                    ${order.final_amount.toFixed(2)}
+                    {tc('currencySymbol')} {order.final_amount.toFixed(2)}
                   </span>
                 </div>
                 <p className="text-muted-foreground pt-2">
@@ -185,7 +185,7 @@ export default function OrderDetailPage() {
                     </p>
                   </div>
                   <p className="font-semibold">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {tc('currencySymbol')} {(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}

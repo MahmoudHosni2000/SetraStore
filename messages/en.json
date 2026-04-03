@@ -15,7 +15,20 @@
     "totalOrders": "Total Orders",
     "accountType": "Account Type",
     "verified": "Verified",
-    "notSet": "Not set"
+    "notSet": "Not set",
+    "systemProtected": "System Protected",
+    "adminAccountProtectedMessage": "Admin accounts are protected from deletion to ensure system management.",
+    "currencySymbol": "EGP",
+    "actions": "Actions",
+    "noName": "No Name",
+    "joined": "Joined: {date}",
+    "description": "Description",
+    "add": "Add",
+    "cancel": "Cancel",
+    "save": "Save",
+    "profile": {
+      "admin": "Admin"
+    }
   },
   "metadata": {
     "title": "SetraStore - Premium Cosmetics",
@@ -26,10 +39,16 @@
     "skincare": "Skincare",
     "haircare": "Haircare",
     "fragrance": "Fragrance",
+    "bath & body": "Bath & Body",
+    "men's grooming": "Men's Grooming",
+    "tools & accessories": "Tools & Accessories",
+    "wellness": "Wellness",
+    "sun care": "Sun Care",
     "myProfile": "My Profile",
     "myOrders": "My Orders",
     "wishlist": "Wishlist",
     "cart": "Cart",
+    "dashboard": "Dashboard",
     "adminDashboard": "Admin Dashboard"
   },
   "home": {
@@ -135,7 +154,11 @@
     "couponApplied": "Coupon applied! {percent}% off",
     "couponError": "Error applying coupon",
     "signInToast": "Please sign in to place an order",
-    "fillFieldsToast": "Please fill in all fields"
+    "fillFieldsToast": "Please fill in all fields",
+    "availableCoupons": "Available Coupons",
+    "clickToApply": "Click to Apply",
+    "copyCode": "Copy Code",
+    "alreadyApplied": "Applied"
   },
   "orders": {
     "title": "My Orders",
@@ -251,7 +274,13 @@
     "passwordsDontMatch": "New passwords do not match",
     "passwordShort": "Password must be at least 6 characters",
     "passwordSuccess": "Password changed successfully!",
-    "passwordError": "Failed to change password"
+    "passwordError": "Failed to change password",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDescription": "Permanently delete your profile and all associated data. This action is irreversible.",
+    "deleteConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+    "deleteSuccess": "Account deleted successfully",
+    "deleteError": "Failed to delete account"
   },
   "productDetails": {
     "notFound": "Product not found",
@@ -275,5 +304,44 @@
     "signInToReview": "Please sign in to leave a review",
     "reviewSuccess": "Review submitted successfully",
     "reviewError": "Error submitting review"
+  },
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "tabs": {
+      "products": "Products",
+      "orders": "Orders",
+      "users": "Users",
+      "coupons": "Coupons"
+    },
+    "stats": {
+      "totalProducts": "Total Products",
+      "totalOrders": "Total Orders",
+      "revenue": "Revenue",
+      "customers": "Customers"
+    },
+    "management": {
+      "products": "Product Management",
+      "orders": "Order Management",
+      "users": "User Management",
+      "coupons": "Coupon Management"
+    },
+    "actions": {
+      "addProduct": "Add Product",
+      "addCoupon": "Add Coupon",
+      "editProduct": "Edit Product",
+      "editCoupon": "Edit Coupon",
+      "saveChanges": "Save Changes",
+      "active": "Active"
+    },
+    "products": {
+      "name": "Product Name",
+      "price": "Price",
+      "stock": "Stock",
+      "category": "Category",
+      "brand": "Brand",
+      "image": "Product Image",
+      "uploadImage": "Upload Image",
+      "isFeatured": "Is Featured"
+    }
   }
 }

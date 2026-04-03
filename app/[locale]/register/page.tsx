@@ -21,11 +21,17 @@ export default function RegisterPage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations('register');
   const tc = useTranslations('common');
+
+  React.useEffect(() => {
+    if (user) {
+      router.replace('/');
+    }
+  }, [user, router]);
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,7 +72,7 @@ export default function RegisterPage() {
     try {
       await signUp(email, password, fullName, avatarFile ?? undefined);
       toast.success(t('successToast'));
-      router.push('/login');
+      router.push('/');
     } catch (error: any) {
       toast.error(error.message || t('errorToast'));
     } finally {

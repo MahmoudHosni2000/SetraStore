@@ -28,14 +28,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const t = useTranslations('auth');
 
   useEffect(() => {
-    checkUser();
-
+    // onAuthStateChange handles both initial session and subsequent changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+          if (currentUser) {
+            await fetchProfile(currentUser.id);
+          } else {
+            setProfile(null);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
           setProfile(null);
         }
         setLoading(false);
@@ -47,11 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Keep checkUser for manual fallback if needed, but not called in useEffect anymore
   async function checkUser() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
       if (user) {
+        setUser(user);
         await fetchProfile(user.id);
       }
     } catch (error) {
@@ -71,8 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
+    } catch (error: any) {
+      console.error('Error fetching profile:', error.message || error);
     }
   }
 
@@ -86,6 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
       });
 
       if (error) throw error;
@@ -115,13 +126,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            id: data.user.id,
-            email,
+          .update({
             full_name: fullName,
-            is_admin: false,
             ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-          });
+          })
+          .eq('id', data.user.id);
 
         if (profileError) throw profileError;
       }
@@ -149,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       setUser(null);
       setProfile(null);
-      router.push('/');
+      window.location.href = '/';
     } catch (error: any) {
       throw new Error(error.message || t('errorSignOut'));
     }

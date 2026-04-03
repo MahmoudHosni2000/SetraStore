@@ -78,7 +78,7 @@ export default function OrdersPage() {
           <div className="space-y-4">
             {orders.map((order) => (
               <Link key={order.id} href={`/orders/${order.id}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer border-border/50 bg-card">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
@@ -102,7 +102,7 @@ export default function OrdersPage() {
                         </p>
                       </div>
                       <p className="text-2xl font-bold text-primary">
-                        ${order.final_amount.toFixed(2)}
+                        {tc('currencySymbol')} {order.final_amount.toFixed(2)}
                       </p>
                     </div>
                   </CardContent>

@@ -69,7 +69,7 @@ export default function CartPage() {
                   <div className="flex gap-4">
                     <Link
                       href={`/products/${item.product_id}`}
-                      className="relative w-24 h-24 rounded-lg overflow-hidden bg-secondary flex-shrink-0"
+                      className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted/30 border border-border/50 flex-shrink-0"
                     >
                       <Image
                         src={item.products.image_url}
@@ -92,7 +92,7 @@ export default function CartPage() {
                         {item.products.brand}
                       </p>
                       <p className="text-lg font-bold text-primary mt-2">
-                        ${item.products.price.toFixed(2)}
+                        {tc('currencySymbol')} {item.products.price.toFixed(2)}
                       </p>
                     </div>
 
@@ -146,7 +146,7 @@ export default function CartPage() {
                 <div className="space-y-2 py-4 border-y border-border">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('subtotal')}</span>
-                    <span className="font-medium">${cartTotal.toFixed(2)}</span>
+                    <span className="font-medium">{tc('currencySymbol')} {cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('shipping')}</span>
@@ -156,7 +156,7 @@ export default function CartPage() {
 
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('total')}</span>
-                  <span className="text-primary">${cartTotal.toFixed(2)}</span>
+                  <span className="text-primary">{tc('currencySymbol')} {cartTotal.toFixed(2)}</span>
                 </div>
 
                 <Button

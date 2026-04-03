@@ -46,8 +46,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       setCart(data || []);
-    } catch (error) {
-      console.error('Error fetching cart:', error);
+    } catch (error: any) {
+      console.error('Error fetching cart:', error.message || error);
     } finally {
       setLoading(false);
     }

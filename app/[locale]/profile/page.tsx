@@ -46,7 +46,7 @@ interface PasswordForm {
 }
 
 export default function ProfilePage() {
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, signOut } = useAuth();
   const router = useRouter();
   const t = useTranslations('profile');
   const tc = useTranslations('common');
@@ -217,6 +217,21 @@ export default function ProfilePage() {
     }
   };
 
+  // ---------- Delete Account ----------
+  const handleDeleteAccount = async () => {
+    if (!confirm(t('deleteConfirm') || 'Are you sure you want to delete your account? This action cannot be undone.')) return;
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.rpc('delete_own_user');
+      if (error) throw error;
+      await signOut();
+      toast.success(t('deleteSuccess') || 'Account deleted successfully');
+    } catch (err: any) {
+      toast.error(err.message || t('deleteError') || 'Failed to delete account');
+    }
+  };
+
   // ---------- Render ----------
   if (loading) {
     return (
@@ -252,7 +267,7 @@ export default function ProfilePage() {
     : 'N/A';
 
   const displayInitial = (form.full_name || user.email || '?')[0].toUpperCase();
-
+  console.log(profile)
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -329,7 +344,7 @@ export default function ProfilePage() {
             <button
               onClick={() => avatarInputRef.current?.click()}
               disabled={isUploadingAvatar}
-              className={`absolute bottom-1 ${locale === 'ar' ? 'left-1' : 'right-1'} w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors border-2 border-background`}
+              className={`absolute bottom-1 end-1 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors border-2 border-background`}
               title={t('changePhoto')}
             >
               {isUploadingAvatar ? (
@@ -340,19 +355,19 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          <div className={`text-center ${locale === 'ar' ? 'sm:text-right' : 'sm:text-left'} pb-2`}>
+          <div className="text-center sm:text-start pb-2">
             <h1 className="text-2xl md:text-3xl font-bold">
               {profile?.full_name || t('welcomeHome')}
             </h1>
             <p className="text-muted-foreground text-sm">{user.email}</p>
-            <div className={`flex items-center justify-center ${locale === 'ar' ? 'sm:justify-end' : 'sm:justify-start'} gap-2 mt-2 flex-wrap`}>
+            <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 flex-wrap">
               {profile?.is_admin && (
                 <Badge className="bg-primary text-white text-xs">
-                  <Shield className={`h-3 w-3 ${locale === 'ar' ? 'ml-1' : 'mr-1'}`} /> {t('admin')}
+                  <Shield className="h-3 w-3 me-1" /> {t('admin')}
                 </Badge>
               )}
               <Badge variant="secondary" className="text-xs">
-                <Calendar className={`h-3 w-3 ${locale === 'ar' ? 'ml-1' : 'mr-1'}`} /> {tc('memberSince', { date: memberSince })}
+                <Calendar className="h-3 w-3 me-1" /> {tc('memberSince', { date: memberSince })}
               </Badge>
             </div>
           </div>
@@ -571,18 +586,18 @@ export default function ProfilePage() {
               <Separator />
               <CardContent className="pt-4 space-y-2">
                 <Link href="/orders">
-                  <Button variant="ghost" className={`w-full justify-start gap-3 h-10 hover:bg-accent ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                  <Button variant="ghost" className="w-full justify-start gap-3 h-10 hover:bg-accent">
                     <Package className="h-4 w-4 text-primary" /> {tnav('myOrders')}
                   </Button>
                 </Link>
                 <Link href="/wishlist">
-                  <Button variant="ghost" className={`w-full justify-start gap-3 h-10 hover:bg-accent ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                  <Button variant="ghost" className="w-full justify-start gap-3 h-10 hover:bg-accent">
                     <ShoppingBag className="h-4 w-4 text-primary" /> {t('wishlist')}
                   </Button>
                 </Link>
                 {profile?.is_admin && (
                   <Link href="/admin">
-                    <Button variant="ghost" className={`w-full justify-start gap-3 h-10 hover:bg-accent ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-10 hover:bg-accent">
                       <Shield className="h-4 w-4 text-primary" /> {tnav('adminDashboard')}
                     </Button>
                   </Link>
@@ -608,6 +623,31 @@ export default function ProfilePage() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Delete Account */}
+            {!profile?.is_admin && (
+              <Card className="shadow-sm border-destructive/20 bg-destructive/5 mt-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-destructive flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" /> {t('dangerZone')}
+                  </CardTitle>
+                </CardHeader>
+                <Separator className="bg-destructive/10" />
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-xs text-muted-foreground mb-4">
+                    {t('deleteAccountDescription')}
+                  </p>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleDeleteAccount}
+                  >
+                    {t('deleteAccount')}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
